@@ -1,6 +1,6 @@
 #pragma once
 
-/*
+
 ATLINLINE HBITMAP AtlLoadGdiplusImage(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGorID type = (UINT) 0)
 {
    USES_CONVERSION;
@@ -43,53 +43,7 @@ ATLINLINE HBITMAP AtlLoadGdiplusImage(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGo
    pBitmap->GetHBITMAP(NULL, &hBitmap); 
    delete pBitmap;
    return hBitmap;
-}*/
-
-/*
-ATLINLINE HBRUSH AtlGetBackgroundBrush(CWindow wndParent)
-{
-   CRect rc;
-   wndParent.GetWindowRect(&rc);
-   CClientDC dc(wndParent);
-   CDC dcMem;
-   dcMem.CreateCompatibleDC(dc);
-   CBitmap bmp;
-   bmp.CreateCompatibleBitmap(dc, rc.Width(), rc.Height());
-   HBITMAP hOldBitmap = dcMem.SelectBitmap(hOldBitmap);
-   wndParent.SendMessage(WM_PRINTCLIENT, (WPARAM) (HDC) dcMem, (LPARAM)(PRF_ERASEBKGND | PRF_CLIENT | PRF_NONCLIENT));
-   HBRUSH hBrush = ::CreatePatternBrush(bmp);
-   dcMem.SelectBitmap(hOldBitmap);
-   return hBrush;
 }
-
-ATLINLINE HBRUSH AtlGetBackgroundBrush(HWND hWnd, HWND hwndParent)
-{
-   CWindow wnd = hWnd;
-   CWindow wndParent = hwndParent;
-   CClientDC dcParent = wndParent;
-   CRect rcParent;
-   wndParent.GetWindowRect(&rcParent);
-   CDC dcCompat1;
-   dcCompat1.CreateCompatibleDC(dcParent);
-   CBitmap bmpCompat1;
-   bmpCompat1.CreateCompatibleBitmap(dcParent, rcParent.Width(), rcParent.Height());
-   HBITMAP hOldBmp1 = dcCompat1.SelectBitmap(bmpCompat1);
-   wndParent.SendMessage(WM_PRINTCLIENT, (WPARAM) (HDC) dcCompat1, (LPARAM)(PRF_ERASEBKGND | PRF_CLIENT | PRF_NONCLIENT));
-   CRect rcWin;
-   wnd.GetWindowRect(&rcWin);
-   CDC dcCompat2;
-   dcCompat2.CreateCompatibleDC();
-   CBitmap bmpCompat2;
-   bmpCompat2.CreateCompatibleBitmap(dcCompat1, rcWin.Width(), rcWin.Height());
-   HBITMAP hOldBmp2 = dcCompat2.SelectBitmap(bmpCompat2);
-   CRect rcSnap = rcWin;
-   ::MapWindowPoints(NULL, wndParent, (LPPOINT) (LPRECT) &rcSnap, 2);
-   dcCompat2.BitBlt(0, 0, rcWin.Width(), rcWin.Height(), dcCompat1, rcSnap.left, rcSnap.top, SRCCOPY);
-   HBRUSH hBrush = ::CreatePatternBrush(bmpCompat2);
-   dcCompat1.SelectBitmap(hOldBmp1);
-   dcCompat2.SelectBitmap(hOldBmp2);
-   return hBrush;
-}*/
 
 ATLINLINE BOOL AtlReplaceColorDib32(HDC hDC, HBITMAP hBitmap, DWORD dwKey, DWORD dwReplace = 0UL, DWORD dwShowColor = 0xFF000000)
 {
