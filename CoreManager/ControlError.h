@@ -26,21 +26,27 @@ private:
 
 // Error handling
 public:
-	// Interface
+	// Interface -----------------------------------------------------------------
 	void ThrowReport();
 	void NoReport();
 	
-	// Acess members
+	// Acess members -------------------------------------------------------------
 	CString log_msg;
 	CString log_descr;
 	CString win_logmsg;
 
-	BOOL win_error;
+	bool win_error;
 	DWORD win_code;
 
-	// TODO: add HRESULT specific handler usando SUCCEEDED()
+	// Handlers ------------------------------------------------------------------
+	// HRESULT Errors
+	class : public OperatorHandler
+	{
+	public:
+		void operator =(HRESULT res) { m_errhost->WinHandler(SUCCEEDED(res)); };
+	} hr_handler;
 
-	// Windows Errors
+	// Win32 Errors (BOOL)
 	class : public OperatorHandler
 	{
 	public:
@@ -49,7 +55,7 @@ public:
 		void operator =(void* res) { m_errhost->WinHandler(res!=0); };	//removi return void*
 	} win_handler;
 
-	// Boolean Errors
+	// Boolean Errors (true/false)
 	class : public OperatorHandler
 	{
 	public:

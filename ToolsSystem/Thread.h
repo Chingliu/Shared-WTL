@@ -11,13 +11,6 @@
 // http://www.codeproject.com/KB/wtl/wtlthreads.aspx
 
 
-#pragma once
-
-#ifndef _ATL_MIN_CRT
-#include <process.h>
-#endif
-
-
 
 template <bool t_bManaged>
 class CThreadT
@@ -30,10 +23,10 @@ public:
 	CThreadT(HANDLE hThread = NULL, DWORD dwThreadId = 0)
 		: m_hThread(hThread), m_dwThreadId(dwThreadId)
 	{
-//#if _WIN32_WINNT >= 0x0502
-//		if ( m_hThread != NULL && m_dwThreadId == 0 )
-//			m_dwThreadId = ::GetThreadId(m_hThread);
-//#endif
+#if _WIN32_WINNT >= 0x0502
+		if ( m_hThread != NULL && m_dwThreadId == 0 )
+			m_dwThreadId = ::GetThreadId(m_hThread);
+#endif
 	}
 
 
@@ -64,14 +57,10 @@ public:
 		DWORD dwStackSize = 0)
 	{
 		DWORD dwThreadId = 0;
-#ifdef _ATL_MIN_CRT
+
 		HANDLE hThread = CreateThread(pSecurityAttr, dwStackSize, pThreadProc, pParam,
 			dwCreationFlags, &dwThreadId);
-#else
-		HANDLE hThread = (HANDLE) _beginthreadex(pSecurityAttr, dwStackSize,
-			(unsigned (__stdcall*)(void*)) pThreadProc,
-			pParam, dwCreationFlags, (unsigned*) &dwThreadId);
-#endif
+
 		return CThreadT(hThread, dwThreadId);
 	}
 
@@ -167,11 +156,7 @@ public:
 		// Make sure this is only called from the thread that this object represents
 		ATLASSERT( m_dwThreadId == ::GetCurrentThreadId() );
 
-#ifdef _ATL_MIN_CRT
 		ExitThread(dwExitCode);
-#else
-		_endthreadex(dwExitCode);
-#endif
 	}
 
 
@@ -221,10 +206,6 @@ public:
 
 
 
-
-
-#include <atlwin.h>
-#include <atlapp.h>
 
 template <bool t_bManaged>
 class CGuiThreadT : public CThreadT<t_bManaged>

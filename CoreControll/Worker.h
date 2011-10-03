@@ -5,7 +5,7 @@
 
 
 class CWorker
-	: private CThreadImpl<CWorker>
+	: private CThread
 {
 public:
 	CWorker( PCTSTR classInfo );
@@ -23,7 +23,7 @@ private:
 protected:
 	void ThreadWork();
 	void DirectWork();
-	void MinWait( DWORD min );
+	void MinWait( DWORD ms );
 
 // Error handling
 public:

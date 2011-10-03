@@ -3,13 +3,15 @@
 
 
 CWorker::CWorker( PCTSTR classInfo )
-	: CThreadImpl( CREATE_SUSPENDED ), err( classInfo )
+	: err( classInfo )
 {
 }
 
 DWORD CWorker::Run()
 {
 	Work( TRUE );
+	CloseHandle(m_hThread);
+	m_hThread = NULL;
 	return S_OK;
 }
 
@@ -36,7 +38,8 @@ void CWorker::Work( BOOL threaded )
 
 void CWorker::ThreadWork()
 {
-	Resume();
+	m_hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) _ThreadProcThunk<CWorker>,
+			this, 0, &m_dwThreadId);
 }
 
 void CWorker::DirectWork()
@@ -44,9 +47,9 @@ void CWorker::DirectWork()
 	Work( FALSE );
 }
 
-void CWorker::MinWait( DWORD min )
+void CWorker::MinWait( DWORD ms )
 {
 	DWORD dif = ::GetTickCount()-m_ticktime;
-	if( min>dif )
-		::Sleep( min-dif );
+	if( ms>dif )
+		::Sleep( ms-dif );
 }

@@ -16,8 +16,10 @@
 
 #ifdef _DEBUG
 	#define DEBUG_ONLY(f)      (f)
+	#define WND_CLASS_SUFIX L"-WTL-CLASS-DEBUG"
 #else
 	#define DEBUG_ONLY(f)      ((void)0)
+	#define WND_CLASS_SUFIX L"-WTL-CLASS-RELEASE"
 #endif
 
 

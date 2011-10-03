@@ -51,7 +51,7 @@ public:
 	// >>> Can be called event at the constructor
 	// >>> Method parameters
 	// rcTarget		: target bliting area and render size, define here an offset from origin corner (0,0) where bliting should occur
-	// canBeSame	: for when SetupRenderArea() is called multiple times at WM_CREATE with the same size
+	// canBeSame	: for when SetupRenderArea() is called multiple times at WM_CREATE always with the same size
 	void SetupRenderArea(const CRect& rcTarget, bool canBeSame=false)
 	{
 		if( canBeSame && m_bSetupArea )
@@ -63,6 +63,9 @@ public:
 		if( !m_render_dc )
 			m_render_dc.CreateCompatibleDC();
 		m_render_dc.SelectBitmap(m_render_ddb);
+
+		m_render_rc = rcTarget;
+		m_bSetupArea = true;
 	};
 
 	void RenderDraw(CDCHandle& dcTo)
@@ -97,7 +100,7 @@ public:
 
 	#ifdef MIXFADE_TRACE
 		CString trace;
-		trace.Format(L"%s >>> FadeInitial: %d", CString(typeid(T).name()), m_uFadeInitial);
+		trace.Format(L"\n%s >>> FadeInitial: %d", CString(typeid(T).name()), m_uFadeInitial);
 		ATLTRACE(trace);
 	#endif
 	};
@@ -117,7 +120,7 @@ public:
 
 	#ifdef MIXFADE_TRACE
 		CString trace;
-		trace.Format(L"%s >>> Delta: %f / Phase: %d\n", CString(typeid(T).name()), delta, m_eDirection==FadeOut ? m_uFadePhase : 255-m_uFadePhase);
+		trace.Format(L"\n%s >>> Delta: %f / Phase: %d", CString(typeid(T).name()), delta, m_eDirection==FadeOut ? m_uFadePhase : 255-m_uFadePhase);
 		ATLTRACE(trace);
 	#elif 0
 		::OutputDebugString(trace);
