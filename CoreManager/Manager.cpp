@@ -1,9 +1,14 @@
 #include "stdafx.h"
 #include "Manager.h"
+#include "Tools\Util.h"
 
+
+DWORD CManager::m_dwUIthread;
 
 CManager::CManager()
 {
+	m_dwUIthread = get_thread_id();
+	ATLASSERT(m_dwUIthread);
 }
 
 __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
@@ -49,5 +54,14 @@ void CManager::MinWait( DWORD ms )
 }
 
 void CManager::AddAdapter(CAdapter* adapter)
+{
+}
+
+void CManager::ASSERT_IsThreadUI()
+{
+	ATLASSERT( get_thread_id() == CManager::m_dwUIthread );
+}
+
+void CManager::ASSERT_IsGuarded()
 {
 }

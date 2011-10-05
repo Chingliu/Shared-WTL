@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Excpt\Excpt.h"
+
 
 template<class TMgrRegister>
 class CEngineControllerT :
@@ -12,6 +14,8 @@ public:
 		ATLVERIFY(m_managers);
 
 		_Module.GetMessageLoop()->AddMessageFilter(this);
+		Exc::SetThrowFunction(true);
+		Exc::SetFrameHandler(true);
 	}
 	~CEngineControllerT()
 	{

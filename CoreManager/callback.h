@@ -1,5 +1,7 @@
-#ifndef UTIL_CALLBACK_HPP
-#define UTIL_CALLBACK_HPP
+// http://www.codeproject.com/KB/cpp/CPPCallback.aspx
+
+#pragma once
+
 
 #define UTIL_GET_CALLBACK_FACTORY_BIND_FREE(freeFuncPtr) \
     (util::GetCallbackFactory(freeFuncPtr).Bind<freeFuncPtr>())
@@ -1033,6 +1035,3 @@ GetCallbackFactory(R (T::*)(P1, P2, P3, P4, P5, P6) const)
 }
 
 }
-
-#endif
-
