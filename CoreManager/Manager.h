@@ -15,7 +15,8 @@ public:
 	
 // Data members
 private:
-	static DWORD m_dwUIthread;
+	static						DWORD g_dwThreadUI; //global ID of the main thread
+	static __declspec(thread)	bool g_bRunGuard;	//flags if running thread is Work guarded
 
 	HANDLE m_hThread;
 	DWORD m_ticktime;
@@ -24,6 +25,7 @@ private:
 // Function members
 private:
 	void Run();
+	void WorkGuard();
 
 // Work process interface
 protected:
@@ -36,6 +38,7 @@ protected:
 // Interface
 public:
 	void AddAdapter(CAdapter* adapter);
-	void ASSERT_IsThreadUI();
-	void ASSERT_IsGuarded();
+
+	static void AssureThreadUI();	 //is DirectWork() or direct call from the main thread
+	static void AssureGuardedWork(); //is running through the Work interface
 };

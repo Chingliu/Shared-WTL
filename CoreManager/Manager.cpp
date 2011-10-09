@@ -3,12 +3,11 @@
 #include "Tools\Util.h"
 
 
-DWORD CManager::m_dwUIthread;
+DWORD CManager::g_dwThreadUI	= get_thread_id();
+bool CManager::g_bRunGuard		= false;
 
 CManager::CManager()
 {
-	m_dwUIthread = get_thread_id();
-	ATLASSERT(m_dwUIthread);
 }
 
 __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
@@ -26,28 +25,44 @@ __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
 void CManager::Run()
 {
 	m_ticktime = ::GetTickCount();
-	m_single_cbk();
+	WorkGuard();
 	::CloseHandle(m_hThread);
 }
 
+void CManager::WorkGuard()
+{
+	ATLASSERT(CManager::g_bRunGuard==false);
+
+	CManager::g_bRunGuard = true;
+	try
+	{
+		m_single_cbk();
+	} catch(...) {
+		__debugbreak();
+	}
+	CManager::g_bRunGuard = false;
+}
 
 // Interface
 void CManager::DirectWork( Callback<void()> runcbk )
 {
-	runcbk();
+	m_single_cbk = runcbk;
+	WorkGuard();
 }
 
 void CManager::ThreadWork( Callback<void()> runcbk )
 {
+	CManager::AssureThreadUI();
 	ATLASSERT(runcbk);
-	m_single_cbk = runcbk;
 
+	m_single_cbk = runcbk;
 	m_hThread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) _ThreadProcThunk,
 			this, 0, NULL);
 }
 
 void CManager::MinWait( DWORD ms )
 {
+	// TODO: check if calling from a Work thread spawned by ThreadWork()
 	DWORD dif = ::GetTickCount()-m_ticktime;
 	if( ms>dif )
 		::Sleep( ms-dif );
@@ -57,11 +72,12 @@ void CManager::AddAdapter(CAdapter* adapter)
 {
 }
 
-void CManager::ASSERT_IsThreadUI()
+void CManager::AssureThreadUI()
 {
-	ATLASSERT( get_thread_id() == CManager::m_dwUIthread );
+	ATLASSERT( get_thread_id() == CManager::g_dwThreadUI );
 }
 
-void CManager::ASSERT_IsGuarded()
+void CManager::AssureGuardedWork()
 {
+	ATLASSERT( CManager::g_bRunGuard );
 }

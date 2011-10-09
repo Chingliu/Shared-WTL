@@ -33,6 +33,10 @@ namespace Log
 			Consume(val);
 			return *this;
 		}
+		Feed& operator << (CString& val) {
+			Consume<PCTSTR>(val);
+			return *this;
+		}
 		Feed& operator << (PCSTR val) {
 			Consume<PCSTR>(val);
 			return *this;

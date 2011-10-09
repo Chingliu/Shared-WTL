@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BinRes.h"
 
-#include "Files\WtlFile.h"
+#include "ToolsSystem\WtlFile.h"
 
 
 CBinRes::CBinRes( UINT nIDRes, PCTSTR type )

@@ -1,7 +1,7 @@
 #pragma once
 
 
-template<class T>
+template<class T, bool TInvalidate=true>
 class CMixHover
 {
 public:
@@ -43,7 +43,8 @@ public:
 			{
 				m_bMouseTracking = TRUE;
 				pT->OnBeginHover();
-				pT->Invalidate();
+				if( TInvalidate )
+					pT->Invalidate();
 			}
 		}
 
@@ -56,7 +57,8 @@ public:
 
 		T* pT = static_cast<T*>(this);
 		pT->OnEndHover();
-		pT->Invalidate();
+		if( TInvalidate )
+			pT->Invalidate();
 
 		SetMsgHandled( FALSE );
 		return TRUE;
