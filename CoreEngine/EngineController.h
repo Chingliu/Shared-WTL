@@ -14,8 +14,8 @@ public:
 		ATLVERIFY(m_managers);
 
 		_Module.GetMessageLoop()->AddMessageFilter(this);
-		Exc::SetThrowFunction(true);
-		Exc::SetFrameHandler(true);
+		//Exc::SetThrowFunction(true);
+		//Exc::SetFrameHandler(true);
 	}
 	~CEngineControllerT()
 	{

@@ -1,11 +1,14 @@
 #pragma once
 
+
 // Debug options
 #ifdef DEBUG
 	//#define MIXFADE_TRACE
 	//#define MIXFADE_CLIP
+#elif
+	#undef MIXFADE_TRACE
+	#undef MIXFADE_CLIP
 #endif
-
 
 #ifdef MIXFADE_TRACE
 	#include <typeinfo>
@@ -34,7 +37,7 @@ public:
 
 		memset(&m_BlendFormat, 0, sizeof(BLENDFUNCTION));
 		m_BlendFormat.BlendOp = AC_SRC_OVER; 
-		m_BlendFormat.BlendFlags = 0; 
+		//m_BlendFormat.BlendFlags = 0; 
 		m_BlendFormat.SourceConstantAlpha = 255;
 		m_BlendFormat.AlphaFormat = AC_SRC_ALPHA;
 	};
@@ -68,7 +71,7 @@ public:
 		m_bSetupArea = true;
 	};
 
-	void RenderDraw(CDCHandle& dcTo)
+	void RenderCacheDraw(CDCHandle& dcTo)
 	{
 		ATLASSERT(!m_render_dc.IsNull());
 		m_render_dc.FillSolidRect(&m_render_rc, 0); //clears the device surface
@@ -114,16 +117,14 @@ public:
 		// New fade value for blending
 		const float FadeTickRate = 255.0f / (float(m_uDuration) / float(SPEED));
 		const float delta = (::GetTickCount() - m_dwFadeTick) / SPEED * FadeTickRate;
-		m_uFadePhase = m_uFadeInitial - delta;
+		m_uFadePhase = int(m_uFadeInitial - delta);
 		if( m_uFadePhase < 0 )
 			m_uFadePhase = 0;
 
 	#ifdef MIXFADE_TRACE
 		CString trace;
 		trace.Format(L"\n%s >>> Delta: %f / Phase: %d", CString(typeid(T).name()), delta, m_eDirection==FadeOut ? m_uFadePhase : 255-m_uFadePhase);
-		ATLTRACE(trace);
-	#elif 0
-		::OutputDebugString(trace);
+		ATLTRACE(trace); //::OutputDebugString(trace);
 	#endif
 
 		// Blend the target
@@ -158,7 +159,7 @@ protected:
 
 // Maps
 public:
-	BEGIN_MSG_MAP(CMixFadeSimple<T>)
+	BEGIN_MSG_MAP(CMixFadeSimple)
 		MSG_WM_TIMER(OnTimer)
 	END_MSG_MAP()
 

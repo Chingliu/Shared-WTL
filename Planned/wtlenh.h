@@ -1,5 +1,5 @@
-#ifndef WTLENH_H
-#define WTLENH_H
+#pragma once
+
 
 /*--------------------------------------------------------------------------
 	This are reflection macros which allows reflection for a certain control
@@ -128,5 +128,3 @@ protected:
 		if(bHandled)														\
 			return TRUE;													\
 	}
-
-#endif

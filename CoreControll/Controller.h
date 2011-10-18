@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Adapter.h"
 #include "Worker.h"
 

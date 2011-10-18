@@ -3,6 +3,8 @@
 #include "ToolsDrawing\Draw.h"
 
 
+// What about testing CThemeImpl::DrawThemeParentBackground()
+
 template<class T>
 class CMixParentBkg
 {
