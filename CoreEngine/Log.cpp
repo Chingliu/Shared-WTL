@@ -3,7 +3,7 @@
 
 namespace Log
 {
-	__declspec(thread) Checkpoint* Checkpoint::s_pTop = NULL;
+	__declspec(thread) Checkpoint* Checkpoint::s_pTop = nullptr;
 
 
 	void PrintF_Internal(PCTSTR szFmt, const int* pParams, PTSTR szBuf, size_t nLenBuf, size_t nData)

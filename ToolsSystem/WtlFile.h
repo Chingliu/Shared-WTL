@@ -48,19 +48,19 @@ public:
 	enum SeekPosition { begin = 0x0, current = 0x1, end = 0x2 };
 
 	enum OpenFlags {
-		modeRead =         (int) 0x00000,
-		modeWrite =        (int) 0x00001,
-		modeReadWrite =    (int) 0x00002,
-		shareCompat =      (int) 0x00000,
-		shareExclusive =   (int) 0x00010,
-		shareDenyWrite =   (int) 0x00020,
-		shareDenyRead =    (int) 0x00030,
-		shareDenyNone =    (int) 0x00040,
-		modeNoInherit =    (int) 0x00080,
-		modeCreate =       (int) 0x01000,
-		modeNoTruncate =   (int) 0x02000,
-		typeText =         (int) 0x04000, // typeText and typeBinary are
-		typeBinary =       (int) 0x08000, // used in derived classes only
+		modeRead =         (int) 0x0000,
+		modeWrite =        (int) 0x0001,
+		modeReadWrite =    (int) 0x0002,
+		shareCompat =      (int) 0x0000, // wtf?
+		shareExclusive =   (int) 0x0010,
+		shareDenyWrite =   (int) 0x0020,
+		shareDenyRead =    (int) 0x0030,
+		shareDenyNone =    (int) 0x0040,
+		modeNoInherit =    (int) 0x0080,
+		modeCreate =       (int) 0x1000,
+		modeNoTruncate =   (int) 0x2000,
+		typeText =         (int) 0x4000, // typeText and typeBinary are
+		typeBinary =       (int) 0x8000, // used in derived classes only
 		};
 
 	enum Attribute {

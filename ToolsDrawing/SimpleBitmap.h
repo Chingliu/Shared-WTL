@@ -8,7 +8,7 @@ class CSimpleBitmap
 public:
 	void LoadBitmap( UINT resID );
 	void LoadGdiplusResImage( _U_STRINGorID bitmap, _U_STRINGorID type = (UINT) RT_BITMAP );
-	void DrawBitmap( HDC dc, CRect& rect, BOOL disabled = FALSE );
+	void DrawBitmap( HDC dc, CRect& rect, bool disabled = false );
 
 	using CBitmap::operator=;
 

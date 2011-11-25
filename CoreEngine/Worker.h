@@ -11,11 +11,13 @@ class CWorker
 public:
 	CWorker();
 	
-// Data members
-protected:
-	static						DWORD g_dwMainThread;	//global ID of the main thread
+// Static members
+public:
+	static						DWORD g_dwMainThread;	//global ID of the main thread which loaded app/module
 	static __declspec(thread)	bool g_bRunGuard;		//flags if running thread is Work guarded
 
+// Data members
+protected:
 	HANDLE m_hThread;
 	DWORD m_ticktime;
 	Callback<void()> m_single_cbk;

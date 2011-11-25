@@ -32,19 +32,26 @@ void CWorker::WorkGuard()
 {
 	ATLASSERT(CWorker::g_bRunGuard==false);
 
+	// TODO: g_bRunGuard has __declspec(thread) which may not work for dynamically loaded DLLs
 	CWorker::g_bRunGuard = true;
+	ATLASSERT(CWorker::g_bRunGuard); //rmv
 	try
 	{
 		m_single_cbk();
 	} catch(...) {
 		__debugbreak();
 	}
+	ATLASSERT(CWorker::g_bRunGuard); //rmv
 	CWorker::g_bRunGuard = false;
+
+	ATLASSERT(CWorker::g_bRunGuard==false); //rmv
 }
 
 // Interface
 void CWorker::DirectWork( Callback<void()> runcbk )
 {
+	ATLASSERT(runcbk);
+
 	m_single_cbk = runcbk;
 	WorkGuard();
 }

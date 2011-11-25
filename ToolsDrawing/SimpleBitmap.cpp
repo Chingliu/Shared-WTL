@@ -68,7 +68,7 @@ void CSimpleBitmap::LoadGdiplusResImage( _U_STRINGorID bitmap, _U_STRINGorID typ
 	GetMeasures();
 }
 
-void CSimpleBitmap::DrawBitmap( HDC dc, CRect& rect, BOOL disabled  )
+void CSimpleBitmap::DrawBitmap( HDC dc, CRect& rect, bool disabled  )
 {
 	CDCHandle(dc).DrawState( CPoint(rect.CenterPoint() - ptcenter), size,
 					*this, disabled?DSS_DISABLED:DSS_NORMAL );

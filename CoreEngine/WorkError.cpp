@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "WorkError.h"
 
+#include <comdef.h>
+
 
 CWorkError::CWorkError()
 {

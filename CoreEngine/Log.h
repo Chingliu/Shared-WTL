@@ -1,8 +1,10 @@
 #pragma once
 
-#define _CRT_NON_CONFORMING_SWPRINTFS
+/*#define _CRT_NON_CONFORMING_SWPRINTFS
 #define _CRT_SECURE_NO_WARNINGS
 #define _SECURE_SCL 0
+#include <windows.h>
+#include <tchar.h>*/
 
 #ifndef ASSERT
 #	ifdef _DEBUG
