@@ -5,7 +5,7 @@
 #ifdef DEBUG
 	//#define MIXFADE_TRACE
 	//#define MIXFADE_CLIP
-#elif
+#else
 	#undef MIXFADE_TRACE
 	#undef MIXFADE_CLIP
 #endif
@@ -44,25 +44,25 @@ public:
 
 private:
 	enum { TIMERID = 6 };
-	enum { SPEED = 15 }; // ms
+	enum { SPEED = 15 }; // ms, WM_TIMER min resolution?
 
 // Interface
 public:
 	inline bool IsAreaSetuped() { return m_bSetupArea; }
 	inline bool IsAnimating() { return m_bAnimating; }
 
-	// >>> Can be called event at the constructor
+	// >>> Can be called even at the constructor
 	// >>> Method parameters
 	// rcTarget		: target bliting area and render size, define here an offset from origin corner (0,0) where bliting should occur
-	// canBeSame	: for when SetupRenderArea() is called multiple times at WM_CREATE always with the same size
-	void SetupRenderArea(const CRect& rcTarget, bool canBeSame=false)
+	// willBeSame	: for when SetupRenderArea() is called multiple times at WM_CREATE always with the same size
+	void SetupRenderArea(const CRect& rcTarget, bool willBeSame=false)
 	{
-		if( canBeSame && m_bSetupArea )
+		if( willBeSame && m_bSetupArea )
 			return;
 		if( m_render_ddb && (rcTarget.Width()>m_render_rc.Width() || rcTarget.Height()>m_render_rc.Height()) )
 			ATLVERIFY( m_render_ddb.DeleteObject() ); //maybe leak BUG, might not be deleting cause it is selected in the DC
 		if( !m_render_ddb )
-			m_render_ddb.CreateBitmap(rcTarget.Width(), rcTarget.Height(), 1, 32, NULL);
+			m_render_ddb.CreateBitmap(rcTarget.Width(), rcTarget.Height(), 1, 32, nullptr);
 		if( !m_render_dc )
 			m_render_dc.CreateCompatibleDC();
 		m_render_dc.SelectBitmap(m_render_ddb);

@@ -14,14 +14,14 @@ public:
 	~CWtlFile();
 
 	// Operations
-	BOOL Open( PCTSTR lpszFileName, UINT nOpenFlags );
+	bool Open( PCTSTR lpszFileName, UINT nOpenFlags );
 	void Close();
-	BOOL Delete();
+	bool Delete();
 
 	DWORD Read(LPVOID lpBuf, DWORD nCount);
-	BOOL Write(LPCVOID lpBuf, DWORD nCount);
+	bool Write(LPCVOID lpBuf, DWORD nCount);
 	void WriteEndOfLine();
-	BOOL Flush();
+	bool Flush();
 
 	DWORD Seek(LONG lOff, UINT nFrom);
 	DWORD SeekToEnd();
@@ -35,7 +35,7 @@ public:
 
 // Static
 public:
-	static BOOL FileExists(PCTSTR pstrFileName);
+	static bool FileExists(PCTSTR pstrFileName);
 	// TO-DO - atributos como LastAccessTime, get a file size based on file name - http://blog.kowalczyk.info/article/Get-file-size-under-windows.html
 
 // Data members
@@ -75,6 +75,7 @@ public:
 };
 
 
+// poderia usar CAtlTemporaryFile do header <atlfile.h>
 class CTemporaryFile
 	: public CWtlFile
 {
@@ -83,5 +84,5 @@ public:
 	~CTemporaryFile();
 
 public:
-	BOOL TempFile( CString& outpath );
+	bool TempFile( CString& outpath );
 };

@@ -9,7 +9,6 @@
 #define WMU_SIGNAL_POST (WM_APP + 1)
 
 
-
 // Manager base - standard work interface
 class CManager
 	: public CWorker
@@ -24,9 +23,9 @@ protected:
 };
 
 
-// Manager linked - links with a single adapter
+// Manager linked
 template<class TApdater>
-class CManagerLinked
+class CManagerLinked // links with a single adapter
 	: public CManager, public CAdapterLink
 {
 protected:
@@ -40,12 +39,26 @@ protected:
 	}
 };
 
+template<class TApdater>
+class CManagerLinkedN // links with any number of adapters
+	: public CManager, public CAdapterLink
+{
+protected:
+	CAtlArray<TApdater*> m_linked_adapters;
+	
+// Interface
+protected:
+	void AddAdapter(TApdater* adapter)
+	{
+		m_linked_adapters.Add(adapter);
+	}
+};
 
 
 // ---------------------------------------------------------------------------------------------------------
 
 // What if we allow non-managers classes to also be able to have adapters?
-class CAdapterLink
+class CAdapterLink// why not have this interface directly into CManager?
 {
 // Local interface
 protected:

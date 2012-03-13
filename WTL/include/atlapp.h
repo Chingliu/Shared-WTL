@@ -598,9 +598,7 @@ namespace RunTimeHelper
 #ifndef _WIN32_WCE
 	inline bool IsCommCtrl6()
 	{
-		DWORD dwMajor = 0, dwMinor = 0;
-		HRESULT hRet = ATL::AtlGetCommCtrlVersion(&dwMajor, &dwMinor);
-		return (SUCCEEDED(hRet) && (dwMajor >= 6));
+		return true;
 	}
 
 	inline bool IsVista()

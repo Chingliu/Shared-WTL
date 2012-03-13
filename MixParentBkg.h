@@ -36,8 +36,8 @@ public:
 
 		// Create CImage
 		CImage imgPrint;
-		imgPrint.Create(rcParent.Width(), rcParent.Height(), 32, CImage::createAlphaChannel);
-		m_imgBack.Create(rcBltSource.Width(), rcBltSource.Height(), 32, CImage::createAlphaChannel);
+		ATLENSURE( imgPrint.Create(rcParent.Width(), rcParent.Height(), 32, CImage::createAlphaChannel) );
+		ATLENSURE( m_imgBack.Create(rcBltSource.Width(), rcBltSource.Height(), 32, CImage::createAlphaChannel) );
 
 		// Copy a portion of the parent DC as this window background
 		CDCHandle dc_print( imgPrint.GetDC() );
@@ -56,4 +56,3 @@ public:
 		m_imgBack.BitBlt(dc, 0, 0);
 	};
 };
-

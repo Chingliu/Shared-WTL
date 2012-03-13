@@ -35,5 +35,5 @@ public:
 	void Create( CWindow wnd, UINT nType=0, PCTSTR face=nullptr );
 
 	// DEPRECATED >>> Create a font with the method above and apply to a child static control
-	BOOL Apply( CWindow pWndParent, UINT nControlID, UINT nType=0, PCTSTR face=NULL );
+	BOOL Apply( CWindow pWndParent, UINT nControlID, UINT nType=0, PCTSTR face=nullptr );
 };

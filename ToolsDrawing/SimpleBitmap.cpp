@@ -13,7 +13,7 @@ void CSimpleBitmap::GetMeasures()
 void CSimpleBitmap::LoadBitmap( UINT resID )
 {
 	//DeleteObject();
-	ATLVERIFY( CBitmap::LoadBitmap(resID) );
+	ATLENSURE( CBitmap::LoadBitmap(resID) );
 	GetMeasures();
 }
 

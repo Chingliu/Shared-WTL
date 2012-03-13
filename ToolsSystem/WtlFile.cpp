@@ -12,7 +12,7 @@ CWtlFile::~CWtlFile()
 	Close();
 }
 
-BOOL CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
+bool CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 {
 	Close();
 	
@@ -73,8 +73,8 @@ BOOL CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 	// attempt file creation
 	HANDLE hFile = ::CreateFile(lpszFileName, dwAccess, dwShareMode, NULL,
 		dwCreateFlag, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return FALSE;
+	if( hFile == INVALID_HANDLE_VALUE )
+		return false;
 	m_hFile = hFile;
 
 	// See if the file already exists and if it does move the file pointer 
@@ -82,7 +82,7 @@ BOOL CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 	if (::GetLastError()==ERROR_ALREADY_EXISTS)
 		::SetFilePointer(hFile, 0, 0, FILE_END);
 
-	return TRUE;
+	return true;
 }
 
 void CWtlFile::Close()
@@ -93,9 +93,9 @@ void CWtlFile::Close()
 	m_hFile = NULL;
 }
 
-BOOL CWtlFile::Delete()
+bool CWtlFile::Delete()
 {
-	return ::DeleteFile(m_strFileName);
+	return ::DeleteFile(m_strFileName)!=FALSE;
 }
 
 DWORD CWtlFile::Read(LPVOID lpBuf, DWORD nCount)
@@ -109,16 +109,16 @@ DWORD CWtlFile::Read(LPVOID lpBuf, DWORD nCount)
 	return dwBytesRead;
 }
 
-BOOL CWtlFile::Write(LPCVOID lpBuf, DWORD nCount)
+bool CWtlFile::Write(LPCVOID lpBuf, DWORD nCount)
 {
 	ATLASSERT(lpBuf!=NULL);
 	if (nCount == 0)
-		return FALSE;
+		return false;
 
 	DWORD dwBytesWritten;
-	if( !::WriteFile(m_hFile, lpBuf, nCount, &dwBytesWritten, NULL) ) return FALSE;
+	if( !::WriteFile(m_hFile, lpBuf, nCount, &dwBytesWritten, NULL) ) return false;
 	ATLASSERT( dwBytesWritten==nCount );
-	return TRUE;
+	return true;
 }
 
 void CWtlFile::WriteEndOfLine()
@@ -129,9 +129,9 @@ void CWtlFile::WriteEndOfLine()
 	ATLASSERT( dwBytesWritten==2 );
 }
 
-BOOL CWtlFile::Flush()
+bool CWtlFile::Flush()
 {
-	return ::FlushFileBuffers(m_hFile);
+	return ::FlushFileBuffers(m_hFile)!=FALSE;
 }
 
 DWORD CWtlFile::Seek(LONG lOff, UINT nFrom)
@@ -170,7 +170,7 @@ DWORD CWtlFile::GetSize()
 	return GetLength();
 }
 
-BOOL CWtlFile::FileExists(PCTSTR pstrFileName) //http://blog.kowalczyk.info/article/Check-if-file-exists-on-Windows.html
+bool CWtlFile::FileExists(PCTSTR pstrFileName) //http://blog.kowalczyk.info/article/Check-if-file-exists-on-Windows.html
 {
 	DWORD dwErrMode = ::SetErrorMode(SEM_FAILCRITICALERRORS);
 	DWORD dwAttribs = ::GetFileAttributes(pstrFileName);
@@ -189,7 +189,7 @@ CTemporaryFile::~CTemporaryFile()
 	Delete();
 }
 
-BOOL CTemporaryFile::TempFile( CString& outpath )
+bool CTemporaryFile::TempFile( CString& outpath )
 {
 	PTSTR out = outpath.GetBuffer(MAX_PATH);
 	::GetTempPath(MAX_PATH, out);

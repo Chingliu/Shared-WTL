@@ -12,7 +12,7 @@ public:
 	CEngineControllerT()
 	{
 		m_managers = new TRegister;
-		ATLVERIFY(m_managers);
+		ATLENSURE(m_managers);
 
 		_Module.GetMessageLoop()->AddMessageFilter(this);
 		//Exc::SetThrowFunction(true);

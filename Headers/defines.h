@@ -2,11 +2,10 @@
 
 #define JOIN( X, Y ) JOIN2(X,Y)
 #define JOIN2( X, Y ) X##Y
-//#include "compile_assert.h"
 
 
 #ifdef __ATLCOLL_H__
-	typedef CAtlMap<CString, BOOL, CStringRefElementTraits<CString>> CAtlStringMap;
+	typedef CAtlMap<CString, bool, CStringRefElementTraits<CString>> CAtlStringMap;
 #endif
 
 
@@ -16,17 +15,17 @@
 
 #ifdef _DEBUG
 	#define DEBUG_ONLY(f)      (f)
-	#define WND_CLASS_SUFIX L"-WTL-CLASS-DEBUG"
+	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_DEBUG"
 #else
 	#define DEBUG_ONLY(f)      ((void)0)
-	#define WND_CLASS_SUFIX L"-WTL-CLASS-RELEASE"
+	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_RELEASE"
 #endif
 
 
-#define DWORD_FILL(byte_size)								\
-	static_assert((byte_size)%sizeof(DWORD) == 0,			\
-					"Byte size is not a DWORD multiple");	\
-	struct {												\
-		JOIN(DWORD fill_gap, __LINE__)						\
-		[(byte_size)/sizeof(DWORD)];						\
+#define DWORD_FILL(byte_size)										\
+	static_assert((byte_size)%sizeof(DWORD) == 0,					\
+					"Byte size is not a DWORD multiple");			\
+	struct {														\
+		DWORD JOIN(FILL_GAP, JOIN(__LINE__,JOIN(_, byte_size)))		\
+		[(byte_size)/sizeof(DWORD)];								\
 	};

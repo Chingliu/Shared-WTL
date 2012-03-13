@@ -39,7 +39,7 @@ public:
 	class : public OperatorHandler // BOOL
 	{
 	public:
-		void operator =(BOOL res)	{ m_errhost->WinHandler(res==TRUE); } //there can be functions which do not return exactly TRUE, but a number > TRUE, probably when returning a DWORD
+		void operator =(BOOL res)	{ m_errhost->WinHandler(res!=FALSE); } //there can be functions which do not return exactly TRUE, but a number > TRUE, probably when returning a DWORD
 		void operator =(void* res)	{ m_errhost->WinHandler(res!=nullptr); }
 	} win_handler;
 

@@ -13,8 +13,12 @@ CWorkError::CWorkError()
 
 void CWorkError::WinHandler( bool res )
 {
+	if( !res )
+		ATLASSERT( FALSE );
 }
 
 void CWorkError::NormHandler( bool res )
 {
+	if( !res )
+		ATLASSERT( FALSE );
 }

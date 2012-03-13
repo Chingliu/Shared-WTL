@@ -12,7 +12,7 @@ CBinRes::CBinRes( UINT nIDRes, PCTSTR type )
 	
 	hRsrc = ::FindResource( _Module.GetResourceInstance(),
 							MAKEINTRESOURCE(nIDRes), type );
-	ATLVERIFY( hRsrc );
+	ATLENSURE( hRsrc );
 
 	hResLoaded = ::LoadResource( _Module.GetResourceInstance(), hRsrc );
 	dwSizeRes = ::SizeofResource( _Module.GetResourceInstance(), hRsrc );
@@ -20,7 +20,7 @@ CBinRes::CBinRes( UINT nIDRes, PCTSTR type )
 
 	m_resAdrr = ::LockResource( hResLoaded );
 	m_size = dwSizeRes;
-	ATLVERIFY( m_resAdrr );
+	ATLENSURE( m_resAdrr );
 }
 
 CBinRes::~CBinRes()
