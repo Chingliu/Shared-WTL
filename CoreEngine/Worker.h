@@ -1,6 +1,7 @@
 #pragma once
 
 #include "callback.h"
+#include "Log.h"
 #include "WorkError.h"
 
 
@@ -27,14 +28,11 @@ private:
 	void Run();
 	void WorkGuard();
 
-// Work process interface
+// Interface - work process 
 protected:
 	CWorkError err;
 
 	void DirectWork( Callback<void()> runcbk );
 	void ThreadWork( Callback<void()> runcbk );
 	void MinWait( DWORD ms ); //call it at end of the callback
-
-// Interface
-public:
 };

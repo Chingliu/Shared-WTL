@@ -1,15 +1,10 @@
 #pragma once
 
-#include "Log.h"
-
 
 class CWorkError
 {
 public:
 	CWorkError();
-
-// Data members
-private:
 
 // Function members
 private:

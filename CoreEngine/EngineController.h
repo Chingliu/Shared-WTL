@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Excpt\Excpt.h"
 #include "Manager.h"
 
 
@@ -15,8 +14,6 @@ public:
 		ATLENSURE(m_managers);
 
 		_Module.GetMessageLoop()->AddMessageFilter(this);
-		//Exc::SetThrowFunction(true);
-		//Exc::SetFrameHandler(true);
 	}
 	~CEngineControllerT()
 	{
