@@ -45,7 +45,7 @@ public:
 
 			#ifdef DEBUG
 				BOOL res = ::GetClassInfoExW(hinst, lpszClass, lpwcx);
-				ATLASSERT( res );
+				ATLENSURE(res);
 				//lpwcx->style &= ~CS_OWNDC;
 				//lpwcx->hbrBackground = (HBRUSH) ::GetStockObject(DKGRAY_BRUSH);
 				return res;
@@ -90,7 +90,7 @@ public:
 public:
 	HWND get_hwnd() { return m_hWnd; };
 	HINSTANCE get_resource_instance() { return ModuleHelper::GetResourceInstance(); };
-	virtual LRESULT on_callback_host(LPSCN_CALLBACK_HOST pnmld) override;
+	LRESULT on_callback_host(LPSCN_CALLBACK_HOST pnmld);// can be switched to virtual/override form
 
 // Handler prototypes
 protected:

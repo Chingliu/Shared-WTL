@@ -9,17 +9,19 @@
 #define WMU_SIGNAL_POST (WM_APP + 1)
 
 
-// Manager base - standard work interface
+// Manager base - standard work interface with no adapter
 class CManager
 	: public CWorker
 {
-public:
-	CManager();
-
-// Interface
+// Interface static so these checks can be made at ANY place
 protected:
-	static void AssureThreadUI();	 //is DirectWork() or direct call from the main thread
-	static void AssureGuardedWork(); //is running through the Work interface
+	static void AssureThreadUI();		//is DirectWork() or direct call from the main thread
+	static void AssureWorkGuarded();	//is running through the Worker interface
+	static void AssureWorkThreaded();	//is running through a Worker thread
+
+// Overrides
+protected:
+	virtual void OnErrorReport( CWorkError* source_err ) override;
 };
 
 

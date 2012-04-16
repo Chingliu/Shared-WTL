@@ -14,10 +14,12 @@
 
 
 #ifdef _DEBUG
-	#define DEBUG_ONLY(f)      (f)
+	#define ASSERT(x) do { if (!(x)) __debugbreak(); } while (false)
+	#define DEBUG_ONLY(f) (f)
 	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_DEBUG"
 #else
-	#define DEBUG_ONLY(f)      ((void)0)
+	#define ASSERT(x) __noop
+	#define DEBUG_ONLY(f) __noop
 	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_RELEASE"
 #endif
 

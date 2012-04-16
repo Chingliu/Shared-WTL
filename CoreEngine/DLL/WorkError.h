@@ -5,6 +5,7 @@ class CWorkError
 {
 public:
 	CWorkError();
+	class CWorkException {};
 
 // Function members
 private:
@@ -21,9 +22,13 @@ private:
 
 public:
 	// Interface -----------------------------------------------------------------
-	// Acess members -------------------------------------------------------------
-	// Handlers ------------------------------------------------------------------
+	void ThrowError();
 
+	// Acess members -------------------------------------------------------------
+	CString log_msg;	// importance level: 1
+	CString log_descr;	// importance level: 2
+
+	// Handlers ------------------------------------------------------------------
 	// >>> Win32 errors
 	class : public OperatorHandler // HRESULT
 	{

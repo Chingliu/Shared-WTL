@@ -9,8 +9,17 @@
 // any other, from this software.
 
 // http://www.codeproject.com/KB/wtl/wtlthreads.aspx
+// Snippet for a custom thread object:
 
-
+/*
+class CThreadCls : public CThreadImpl<CThreadCls>
+{
+public:
+	void Run()
+	{
+	}
+};
+*/
 
 template <bool t_bManaged>
 class CThreadT

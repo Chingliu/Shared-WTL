@@ -1,21 +1,10 @@
-#include <windows.h>
-#include <typeinfo>
-#include "Excpt.h"
+#include "stdafx.h"
+#include "util_excpt.h"
 
 #pragma warning (disable: 4731) // ebp register overwritten
 #pragma warning (disable: 4733) // fs:[0] accessed
 #pragma warning (disable: 4200) // zero-sized arrays
 #pragma warning (disable: 4094)	// untagged class
-
-#ifdef _DEBUG
-#	define ASSERT(x) do { if (!(x)) __debugbreak(); } while (false)
-#else
-#	define ASSERT(x) __noop
-#endif
-
-template <bool ok> struct AssertTest;
-template <> struct AssertTest<true> {};
-#define STATIC_ASSERT(x) class { class AssertTstAtLine##__LINE__ :public AssertTest<(bool) (x)> {}; }
 
 
 inline void Verify(bool bVal)
@@ -23,53 +12,6 @@ inline void Verify(bool bVal)
 	if (!bVal) __debugbreak();
 }
 
-//#define CHKREG_ENABLE
-
-#ifdef CHKREG_ENABLE
-
-#	define CHKREG_PROLOG_NO_EBX \
-	{ \
-		_asm push ebp \
-		_asm push esi \
-		_asm push edi \
-	}
-
-#	define CHKREG_PROLOG \
-	{ \
-		_asm push ebx \
-	} \
-	CHKREG_PROLOG_NO_EBX
-
-
-#	define CHKREG_EPILOG_REG(reg) \
-		_asm cmp reg, [esp] \
-		_asm je Ok##reg \
-		_asm int 3 \
-		_asm Ok##reg: \
-		_asm add esp, 4
-
-#	define CHKREG_EPILOG_NO_EBX \
-	{ \
-		CHKREG_EPILOG_REG(edi) \
-		CHKREG_EPILOG_REG(esi) \
-		CHKREG_EPILOG_REG(ebp) \
-	}
-
-#	define CHKREG_EPILOG \
-	CHKREG_EPILOG_NO_EBX \
-	{ \
-		CHKREG_EPILOG_REG(ebx) \
-	}
-
-
-#else // CHKREG_ENABLE
-
-#	define CHKREG_PROLOG_NO_EBX
-#	define CHKREG_PROLOG
-#	define CHKREG_EPILOG_NO_EBX
-#	define CHKREG_EPILOG
-
-#endif // CHKREG_ENABLE
 
 ////////////////////////////////////////
 // Exception registration record (not only C++)
@@ -87,7 +29,7 @@ struct ExcReg
 	}
 
 	void Dismiss() {
-		Verify(this == get_Top());
+		Verify(this == get_Top()); // corruption test
 		m_pPrev->put_Top();
 	}
 
@@ -97,7 +39,7 @@ struct ExcReg
 ExcReg* ExcReg::get_Top()
 {
 	ExcReg* pExcReg;
-	_asm
+	__asm
 	{
 		mov eax, fs:[0]
 		mov pExcReg, eax
@@ -108,7 +50,7 @@ ExcReg* ExcReg::get_Top()
 void ExcReg::put_Top() // can call even for NULL obj
 {
 	ExcReg* pExcReg = this;
-	_asm
+	__asm
 	{
 		mov eax, pExcReg;
 		mov fs:[0], eax
@@ -140,27 +82,24 @@ EXCEPTION_DISPOSITION Exc::MonitorRaw::HandlerStat(EXCEPTION_RECORD* pExc, PVOID
 
 Exc::MonitorRaw::MonitorRaw()
 {
-	STATIC_ASSERT(sizeof(m_pOpaque) == sizeof(ExcReg));
+	static_assert(sizeof(m_pOpaque) == sizeof(ExcReg), "Error: m_pOpaque wrong size");
 	((ExcReg&) m_pOpaque).m_pfnHandler = HandlerStat;
 	((ExcReg&) m_pOpaque).Install();
-
 }
 
 void Exc::MonitorRaw::NormalExit()
 {
-	STATIC_ASSERT(sizeof(m_pOpaque) == sizeof(ExcReg));
 	ASSERT(((ExcReg&) m_pOpaque).m_pfnHandler);
 	((ExcReg&) m_pOpaque).Dismiss();
 }
 
-
 Exc::Monitor::~Monitor()
 {
-	STATIC_ASSERT(sizeof(m_pOpaque) == sizeof(ExcReg));
 	if (((ExcReg&) m_pOpaque).m_pfnHandler)
 		((ExcReg&) m_pOpaque).Dismiss();
 }
 
+/*
 ////////////////////////////////////////
 // Exception registration record built by C++ compiler
 struct ExcRegCpp
@@ -265,11 +204,15 @@ struct ExcMon
 	,public WrapExcRecord
 {
 	__declspec(thread) static ExcMon* s_pInst;
+	__declspec(thread) static bool s_bExcAllowed;
 
 	static EXCEPTION_DISPOSITION Handler(EXCEPTION_RECORD* pExc, ExcMon* pThis, CONTEXT* pCpuCtx) {
 		ASSERT(pExc && pThis);
 		if (EXC_FLAG_UNWIND & pExc->ExceptionFlags)
 			pThis->RemoveLastExc();
+		else
+			Verify(s_bExcAllowed); // Check for EH corruption
+
 		return ExceptionContinueSearch;
 	}
 
@@ -292,7 +235,7 @@ struct ExcMon
 
 	void RemoveLastExc()
 	{
-		Verify(this == s_pInst);
+		ASSERT(this == s_pInst);
 		s_pInst = NULL;
 	}
 
@@ -304,28 +247,25 @@ struct ExcMon
 };
 
 __declspec(thread) ExcMon* ExcMon::s_pInst = NULL;
+__declspec(thread) bool ExcMon::s_bExcAllowed = false;
 
 
 
 struct WorkerForAll
 	:public WorkerForLocalUnwind
-	,public WrapExcRecord
 {
 	ThrownType*	m_pThrownType;
 	PVOID		m_pThrownObj;
 
 	void Catch();
-	void CatchInternal();
-	void CatchInternal(const FrameInfo::Try&, const FrameInfo::Try::Catch&);
-	void CatchInternalFinal(const FrameInfo::Try& tryEntry, const FrameInfo::Try::Catch& catchEntry, const ThrownType::Sub*);
 
+	__forceinline DWORD CatchInternal(const FrameInfo::Try&, const FrameInfo::Try::Catch&, EXCEPTION_RECORD*); // called only once
 	void UnwindUntil(const FrameInfo::Try&);
-
-	void AssignCatchObj(const FrameInfo::Try::Catch&, const ThrownType::Sub&);
-	DWORD CallCatchRaw(const FrameInfo::Try::Catch&);
-	void DestroyThrownObjSafe();
-
-	__declspec(noreturn) void PassCtlAfterCatch(DWORD dwAddr);
+	__forceinline void AssignCatchObj(const FrameInfo::Try::Catch&, const ThrownType::Sub&); // called only once
+	__forceinline DWORD CallCatchRaw(const FrameInfo::Try::Catch&); // called only once
+	__forceinline DWORD CallCatchDestroyObj(const FrameInfo::Try::Catch&); // small
+	__forceinline void DestroyThrownObjSafe(); // called once
+	__forceinline __declspec(noreturn) void PassCtlAfterCatch(DWORD dwAddr); // called once
 };
 
 
@@ -347,6 +287,9 @@ void WorkerForLocalUnwind::UnwindLocal(long nStopAtId)
 		m_pExcRegCpp->m_NextCleanup = entry.m_nPrevIdx;
 
 		if (pfnCleanup)
+		{
+			ExcMon::s_bExcAllowed = true;
+
 			_asm
 			{
 				mov eax, pfnCleanup
@@ -366,6 +309,9 @@ void WorkerForLocalUnwind::UnwindLocal(long nStopAtId)
 
 				CHKREG_EPILOG
 			}
+
+			ExcMon::s_bExcAllowed = false;
+		}
 	}
 }
 
@@ -397,6 +343,8 @@ EXCEPTION_DISPOSITION WrapExcRecord::InvokeHandler(const ExcReg& excReg) const
 
 	EXCEPTION_DISPOSITION retVal;
 
+	ExcMon::s_bExcAllowed = true;
+
 	_asm
 	{
 		// There's some ambiguity here: Some handlers are actually __cdecl funcs, whereas
@@ -419,6 +367,8 @@ EXCEPTION_DISPOSITION WrapExcRecord::InvokeHandler(const ExcReg& excReg) const
 		CHKREG_EPILOG_NO_EBX
 	}
 
+	ExcMon::s_bExcAllowed = false;
+
 	return retVal;
 }
 
@@ -433,7 +383,7 @@ void WrapExcRecord::RaiseExcRaw(ExcReg* pExcReg) const throw(...)
 
 		if (ExceptionContinueExecution == InvokeHandler(*pExcReg))
 		{
-			Verify(!(EXCEPTION_NONCONTINUABLE & m_pExc->ExceptionFlags));
+			Verify(!(EXCEPTION_NONCONTINUABLE & m_pExc->ExceptionFlags)); // stupid EH handler?
 			break;
 		}
 	}
@@ -451,20 +401,24 @@ void WorkerForAll::UnwindUntil(const FrameInfo::Try& tryEntry)
 {
 	// Global unwind
 	EXCEPTION_RECORD exc;
-	exc.ExceptionCode		= m_pExc->ExceptionCode;
+	exc.ExceptionCode		= 0;
 	exc.ExceptionFlags		= EXC_FLAG_UNWIND;
-	exc.ExceptionRecord		= m_pExc->ExceptionRecord; // ???
-	exc.ExceptionAddress	= m_pExc->ExceptionAddress;
+	exc.ExceptionRecord		= NULL; // ???
+	exc.ExceptionAddress	= 0;
 	exc.NumberParameters	= 0;
+
+	static CONTEXT ctx = { 0 };
 
 	WrapExcRecord wrk;
 	wrk.m_pExc = &exc;
-	wrk.m_pCpuCtx = m_pCpuCtx;
+	wrk.m_pCpuCtx = &ctx;
 
 	ExcReg* pParent = NULL;
 	for (ExcReg* pExcReg = ExcReg::get_Top(); m_pExcRegCpp != pExcReg; )
 	{
-		Verify(pExcReg->IsValid());
+		Verify(pExcReg > pParent); // stack corruption test
+
+		ASSERT(pExcReg->IsValid());
 		ExcReg* pPrev = pExcReg->m_pPrev;
 
 		if (pExcReg->m_pfnHandler == ExcMon::Handler)
@@ -509,6 +463,8 @@ void WorkerForAll::AssignCatchObj(const FrameInfo::Try::Catch& catchEntry, const
 				PVOID pfnCtor = typeSub.m_pfnCopyCtor;
 				if (pfnCtor)
 				{
+					ExcMon::s_bExcAllowed = true;
+
 					_asm
 					{
 						mov  ecx, pDst	// this
@@ -520,6 +476,8 @@ void WorkerForAll::AssignCatchObj(const FrameInfo::Try::Catch& catchEntry, const
 
 						CHKREG_EPILOG
 					}
+
+					ExcMon::s_bExcAllowed = false;
 				}
 				else
 					CopyMemory(PVOID(pDst), pObj, typeSub.m_nSize);
@@ -531,9 +489,11 @@ void WorkerForAll::AssignCatchObj(const FrameInfo::Try::Catch& catchEntry, const
 DWORD WorkerForAll::CallCatchRaw(const FrameInfo::Try::Catch& catchEntry)
 {
 	DWORD dwAddr = catchEntry.m_Catchblock_addr;
-	Verify(0 != dwAddr);
+	ASSERT(dwAddr);
 
 	DWORD dwEbp = m_nEbp;
+
+	ExcMon::s_bExcAllowed = true;
 
 	_asm
 	{
@@ -559,11 +519,15 @@ DWORD WorkerForAll::CallCatchRaw(const FrameInfo::Try::Catch& catchEntry)
 		mov dwAddr, eax // return value (eax) is the address where to pass control to
 	}
 
+	ExcMon::s_bExcAllowed = false;
+
 	return dwAddr;
 }
 
 __declspec(noreturn) void WorkerForAll::PassCtlAfterCatch(DWORD dwAddr)
 {
+	ExcMon::s_bExcAllowed = true;
+
 	ASSERT(dwAddr);
 	ULONG nEbp = m_nEbp;
 	_asm
@@ -584,6 +548,8 @@ void WorkerForAll::DestroyThrownObjSafe()
 		PVOID pObj = m_pThrownObj;
 		PVOID pfnDtor = m_pThrownType->m_pfnDtor;
 
+		ExcMon::s_bExcAllowed = true;
+
 		_asm
 		{
 			mov ecx, pObj
@@ -592,47 +558,22 @@ void WorkerForAll::DestroyThrownObjSafe()
 			call pfnDtor
 			CHKREG_EPILOG
 		}
+
+		ExcMon::s_bExcAllowed = false;
 	}
 }
 
 void WorkerForAll::Catch()
-{
-	// get the C++ exception info
-	//if ((0xe06d7363 == m_pExc->ExceptionCode) &&
-	//	(3 == m_pExc->NumberParameters))
-	//{
-	//	m_pThrownObj	= (PVOID) m_pExc->ExceptionInformation[1];
-	//	m_pThrownType	= (ThrownType*) m_pExc->ExceptionInformation[2];
-
-	//	Verify(
-	//		m_pThrownObj &&
-	//		m_pThrownType &&
-	//		m_pThrownType->m_pTable &&
-	//		(m_pThrownType->m_pTable->m_nCount > 0));
-
-	//	long nSub = 0, nSubTotal = m_pThrownType->m_pTable->m_nCount;
-	//	ThrownType::Sub** ppSub = m_pThrownType->m_pTable->m_pArr;
-
-	//	do {
-	//		ThrownType::Sub* pSub = ppSub[nSub];
-	//		Verify(pSub && NULL != pSub->ti);
-	//	} while (++nSub < nSubTotal);
-
-	//} else
-	//	m_pThrownType = NULL;
-
-	CatchInternal();
-}
-
-
-void WorkerForAll::CatchInternal()
 {
 	long nTryCount = m_pFrame->m_Try.m_nCount;
 	if (nTryCount > 0)
 	{
 		const DWORD dwTryID = m_pExcRegCpp->m_dwTryID;
 		const FrameInfo::Try* pTryTable = m_pFrame->m_Try.m_pArr;
-		Verify(NULL != pTryTable);
+		ASSERT(pTryTable);
+
+		ExcMon* const pMon = ExcMon::s_pInst;
+		ASSERT(pMon);
 
 		// find the enclosing try block
 		long nTry = 0;
@@ -647,11 +588,35 @@ void WorkerForAll::CatchInternal()
 			{
 				// find the appropriate catch block
 				const FrameInfo::Try::Catch* pCatch = tryEntry.m_Catch.m_pArr;
-				Verify(NULL != pCatch);
+				ASSERT(pCatch);
 
 				long nCatch = 0;
 				do {
-					CatchInternal(tryEntry, pCatch[nCatch]);
+
+					for (EXCEPTION_RECORD** ppExc = &pMon->m_pExc; ; )
+					{
+						EXCEPTION_RECORD* pExc = *ppExc;
+						ASSERT(pExc);
+
+						DWORD dwAddr = CatchInternal(tryEntry, pCatch[nCatch], pExc);
+						if (dwAddr)
+						{
+							if (!pMon->m_pExc->ExceptionRecord)
+							{
+								// finito
+								pMon->NormalExit();
+								PassCtlAfterCatch(dwAddr);
+							}
+
+							*ppExc = pExc->ExceptionRecord;
+
+						} else
+							ppExc = &pExc->ExceptionRecord;
+
+						if (! *ppExc)
+							break;
+					}
+
 				} while (++nCatch < nCatchCount);
 			}
 
@@ -659,87 +624,78 @@ void WorkerForAll::CatchInternal()
 	}
 }
 
-void WorkerForAll::CatchInternal(const FrameInfo::Try& tryEntry, const FrameInfo::Try::Catch& catchEntry)
+DWORD WorkerForAll::CatchInternal(const FrameInfo::Try& tryEntry, const FrameInfo::Try::Catch& catchEntry, EXCEPTION_RECORD* pExc)
 {
-	// all the current exceptions
-	for (EXCEPTION_RECORD** ppExc = &ExcMon::s_pInst->m_pExc; ; )
+	// get the C++ exception info
+	if ((0xe06d7363 == pExc->ExceptionCode) &&
+		(3 == pExc->NumberParameters))
 	{
-		m_pExc = *ppExc;
+		m_pThrownObj	= (PVOID) pExc->ExceptionInformation[1];
+		m_pThrownType	= (ThrownType*) pExc->ExceptionInformation[2];
 
-		// get the C++ exception info
-		if ((0xe06d7363 == m_pExc->ExceptionCode) &&
-			(3 == m_pExc->NumberParameters))
-		{
-			m_pThrownObj	= (PVOID) m_pExc->ExceptionInformation[1];
-			m_pThrownType	= (ThrownType*) m_pExc->ExceptionInformation[2];
-		} else
-			m_pThrownType = NULL;
+		ASSERT(
+			m_pThrownObj &&
+			m_pThrownType &&
+			m_pThrownType->m_pTable &&
+			(m_pThrownType->m_pTable->m_nCount > 0));
 
-		if (catchEntry.m_ti)
+		long nSub = 0, nSubTotal = m_pThrownType->m_pTable->m_nCount;
+		ThrownType::Sub** ppSub = m_pThrownType->m_pTable->m_pArr;
+
+		do {
+			ThrownType::Sub* pSub = ppSub[nSub];
+			ASSERT(pSub && NULL != pSub->ti);
+		} while (++nSub < nSubTotal);
+
+	} else
+		m_pThrownType = NULL;
+
+	if (catchEntry.m_ti)
+	{
+		if (m_pThrownType)
 		{
-			if (m_pThrownType)
+			// Check if this type can be cast to the dst one
+			long nSub = 0, nSubTotal = m_pThrownType->m_pTable->m_nCount;
+			ThrownType::Sub** ppTypeSub = m_pThrownType->m_pTable->m_pArr;
+
+			do
 			{
-				// Check if this type can be cast to the dst one
-				long nSub = 0, nSubTotal = m_pThrownType->m_pTable->m_nCount;
-				ThrownType::Sub** ppTypeSub = m_pThrownType->m_pTable->m_pArr;
-
-				while (true)
+				const ThrownType::Sub& typeSub = *(ppTypeSub[nSub]);
+				if (*catchEntry.m_ti == *typeSub.ti)
 				{
-					const ThrownType::Sub& typeSub = *(ppTypeSub[nSub]);
-					if (*catchEntry.m_ti == *typeSub.ti)
-					{
-						CatchInternalFinal(tryEntry, catchEntry, &typeSub);
-						*ppExc = m_pExc->ExceptionRecord;
-						break;
-					}
-
-					if (++nSub == nSubTotal)
-					{
-						ppExc = &m_pExc->ExceptionRecord;
-						break;
-					}
+					UnwindUntil(tryEntry);
+					AssignCatchObj(catchEntry, typeSub);
+					return CallCatchDestroyObj(catchEntry);
 				}
-			}
 
-		} else
-		{
-			CatchInternalFinal(tryEntry, catchEntry, NULL);
-			*ppExc = m_pExc->ExceptionRecord;
+			} while (++nSub < nSubTotal);
 		}
 
-		if (! *ppExc)
-			break;
+	} else
+	{
+		UnwindUntil(tryEntry);
+		ASSERT(!catchEntry.m_Offset);
+		return CallCatchDestroyObj(catchEntry);
 	}
+
+	return 0;
 }
 
-void WorkerForAll::CatchInternalFinal(const FrameInfo::Try& tryEntry, const FrameInfo::Try::Catch& catchEntry, const ThrownType::Sub* pTypeSub)
+DWORD WorkerForAll::CallCatchDestroyObj(const FrameInfo::Try::Catch& catchEntry)
 {
-	// Match!
-	UnwindUntil(tryEntry);
-
-	if (pTypeSub)
-		AssignCatchObj(catchEntry, *pTypeSub);
-	else
-		Verify(!catchEntry.m_Offset);
-
 	DWORD dwAddr = CallCatchRaw(catchEntry);
 
 	m_pExcRegCpp->m_dwTryID++; // if exc is re-raised now - give this try block opportunity to handle it
 	DestroyThrownObjSafe();
 
-	if (!ExcMon::s_pInst->m_pExc->ExceptionRecord)
-	{
-		// finito
-		ExcMon::s_pInst->NormalExit();
-		PassCtlAfterCatch(dwAddr);
-	}
-
+	return dwAddr;
 }
-
 
 EXCEPTION_DISPOSITION __thiscall FrameInfo::Handler(EXCEPTION_RECORD* pExc, ExcRegCpp* pExcRegCpp, CONTEXT* pCpuCtx)
 {
-	Verify(this && pExc && pExcRegCpp && pCpuCtx);
+	ExcMon::s_bExcAllowed = false;
+
+	ASSERT(this && pExc && pExcRegCpp && pCpuCtx);
 
 	WorkerForAll wrk;
 	wrk.m_pFrame = this;
@@ -750,13 +706,11 @@ EXCEPTION_DISPOSITION __thiscall FrameInfo::Handler(EXCEPTION_RECORD* pExc, ExcR
 		wrk.UnwindLocalWithGuard();
 	else
 	{
-		wrk.m_pExc = pExc;
-		wrk.m_pCpuCtx = pCpuCtx;
-
-		if (ExcMon::s_pInst)
+		ExcMon* const pMon = ExcMon::s_pInst;
+		if (pMon)
 		{
-			if (ExcMon::s_pInst->m_pExc != pExc)
-				ExcMon::s_pInst->AppendExc(pExc);
+			if (pMon->m_pExc != pExc)
+				pMon->AppendExc(pExc);
 
 			wrk.Catch();
 
@@ -769,10 +723,13 @@ EXCEPTION_DISPOSITION __thiscall FrameInfo::Handler(EXCEPTION_RECORD* pExc, ExcR
 
 			excMon.RaiseExcRaw(pExcRegCpp->m_pPrev);
 			excMon.NormalExit();
+
+			ExcMon::s_bExcAllowed = true;
 			return ExceptionContinueExecution;
 		}
 	}
 
+	ExcMon::s_bExcAllowed = true;
 	return ExceptionContinueSearch;
 }
 
@@ -809,13 +766,11 @@ void __stdcall V_CxxThrowException(void* pObj, _s__ThrowInfo const* pType)
 	} else
 	{
 		// rethrow
-		Verify(NULL != ExcMon::s_pInst);
-		ASSERT(ExcMon::s_pInst->m_pExc && ExcMon::s_pInst->m_pCpuCtx);
+		ExcMon::s_bExcAllowed = false;
 
-		WrapExcRecord wrk;
-		wrk.m_pExc = ExcMon::s_pInst->m_pExc;
-		wrk.m_pCpuCtx = ExcMon::s_pInst->m_pCpuCtx;
-		wrk.RaiseExcRaw(ExcReg::get_Top());
+		ExcMon* const pMon = ExcMon::s_pInst;
+		Verify(NULL != pMon); // illegal rethrow?
+		pMon->RaiseExcRaw(ExcReg::get_Top());
 	}
 }
 
@@ -885,22 +840,25 @@ namespace Exc
 
 	void RaiseExc(EXCEPTION_RECORD& exc, CONTEXT* pCtx) throw (...)
 	{
+		ExcMon::s_bExcAllowed = false;
+
 		static CONTEXT ctx = { 0 };
 
 		if (!pCtx)
 			pCtx = &ctx;
 
-		if (ExcMon::s_pInst)
+		ExcMon* const pMon = ExcMon::s_pInst;
+		if (pMon)
 		{
-			ExcMon::s_pInst->AppendExc(&exc);
-			ExcMon::s_pInst->m_pCpuCtx = pCtx;
-			ExcMon::s_pInst->RaiseExcRaw(ExcMon::s_pInst);
+			pMon->AppendExc(&exc);
+			pMon->m_pCpuCtx = pCtx;
+			pMon->RaiseExcRaw(ExcReg::get_Top());
 
 		} else
 		{
 			ExcMon mon(&exc, pCtx);
 
-			mon.RaiseExcRaw(&mon);
+			mon.RaiseExcRaw(mon.m_pPrev);
 			mon.NormalExit();
 		}
 	}
@@ -911,3 +869,4 @@ namespace Exc
 	}
 }
 
+*/

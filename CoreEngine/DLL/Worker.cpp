@@ -34,11 +34,21 @@ void CWorker::WorkGuard()
 	CWorker::g_bRunGuard = true;// g_bRunGuard has __declspec(thread) which may not work for dynamically loaded DLLs
 	ATLASSERT(CWorker::g_bRunGuard); //rmv
 
+	class LogExceptMonitor : public Exc::Monitor
+	{
+		virtual bool Handle(EXCEPTION_RECORD* pExc, CONTEXT* pCpuCtx)
+		{
+			//Log::PrintCheckpoints();
+			return false;
+		}
+	};
+
+	LogExceptMonitor monitor;
 	try
 	{
 		m_single_cbk();
-	} catch(...) {
-		__debugbreak();
+	} catch( CWorkError::CWorkException& ) {
+		ATLASSERT(false);
 	}
 
 	ATLASSERT(CWorker::g_bRunGuard); //rmv
@@ -47,7 +57,7 @@ void CWorker::WorkGuard()
 }
 
 // Interface
-void CWorker::DirectWork( Callback<void()> runcbk )
+void CWorker::DirectWork( util::Callback<void()> runcbk )
 {
 	ATLASSERT(runcbk);
 
@@ -55,7 +65,7 @@ void CWorker::DirectWork( Callback<void()> runcbk )
 	WorkGuard();
 }
 
-void CWorker::ThreadWork( Callback<void()> runcbk )
+void CWorker::ThreadWork( util::Callback<void()> runcbk )
 {
 	ATLASSERT(::GetCurrentThreadId() == CWorker::g_dwMainThread);
 	ATLASSERT(runcbk);

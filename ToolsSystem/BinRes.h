@@ -1,7 +1,7 @@
 #pragma once
 
 
-// TO-DO ver uso com WTL::CResource
+// TODO: ver uso com WTL::CResource
 
 class CBinRes
 {

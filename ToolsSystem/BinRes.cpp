@@ -4,19 +4,20 @@
 #include "ToolsSystem\WtlFile.h"
 
 
+// TODO: make sure ATLENSURE is a way that throws an exception
 CBinRes::CBinRes( UINT nIDRes, PCTSTR type )
 {
 	DWORD dwSizeRes;
 	HGLOBAL hResLoaded; //not a real HGLOBAL as stated in LoadResource() documentation
 	HRSRC hRsrc;
 	
-	hRsrc = ::FindResource( _Module.GetResourceInstance(),
+	hRsrc = ::FindResource( ModuleHelper::GetResourceInstance(),
 							MAKEINTRESOURCE(nIDRes), type );
 	ATLENSURE( hRsrc );
 
-	hResLoaded = ::LoadResource( _Module.GetResourceInstance(), hRsrc );
-	dwSizeRes = ::SizeofResource( _Module.GetResourceInstance(), hRsrc );
-	ATLVERIFY( hResLoaded && m_size );
+	hResLoaded = ::LoadResource( ModuleHelper::GetResourceInstance(), hRsrc );
+	dwSizeRes = ::SizeofResource( ModuleHelper::GetResourceInstance(), hRsrc );
+	ATLENSURE( hResLoaded && m_size );
 
 	m_resAdrr = ::LockResource( hResLoaded );
 	m_size = dwSizeRes;

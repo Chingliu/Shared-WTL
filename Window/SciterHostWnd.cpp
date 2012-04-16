@@ -38,7 +38,7 @@ int CSciterHostWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	DefWindowProc();
 	setup_callback();
-	//::SciterSetOption(m_hWnd, SCITER_TRANSPARENT_WINDOW, 1);
+	::SciterSetOption(m_hWnd, SCITER_TRANSPARENT_WINDOW, 1);
 	::SciterSetOption(m_hWnd, SCITER_FONT_SMOOTHING, 3);
 
 	SetMsgHandled(FALSE);

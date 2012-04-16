@@ -1,11 +1,14 @@
 #pragma once
 
+
 namespace Exc
 {
-	class MonitorRaw {
+	class MonitorRaw
+	{
 	protected:
 		DWORD m_pOpaque[2]; // impl details
 		static EXCEPTION_DISPOSITION HandlerStat(EXCEPTION_RECORD* pExc, PVOID, CONTEXT* pCpuCtx);
+
 	public:
 
 		MonitorRaw();
@@ -17,18 +20,10 @@ namespace Exc
 	};
 
 
-
-	struct Monitor :public MonitorRaw {
+	struct Monitor :public MonitorRaw
+	{
 		// Automatically handles scope exit
 		~Monitor();
 	};
 
-	void RaiseExc(EXCEPTION_RECORD&, CONTEXT* = NULL) throw (...);
-
-	EXCEPTION_RECORD* GetCurrentExc();
-
-	void SetFrameHandler(bool bSet);
-	void SetThrowFunction(bool bSet);
-	void SetUncaughtExc(bool bSet);
-
-} // namespace Exc
+}

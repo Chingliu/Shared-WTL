@@ -11,14 +11,19 @@ CWorkError::CWorkError()
 	bool_handler.m_errhost = this;
 }
 
+void CWorkError::ThrowError()
+{
+	throw CWorkException();
+}
+
 void CWorkError::WinHandler( bool res )
 {
 	if( !res )
-		throw;
+		throw CWorkException();
 }
 
 void CWorkError::NormHandler( bool res )
 {
 	if( !res )
-		throw;
+		throw CWorkException();
 }
