@@ -3,9 +3,6 @@
 
 #include <comdef.h>
 
-#include "Log.h"
-#include "../util_excpt.h"
-
 
 CWorkError::CWorkError()
 {

@@ -13,6 +13,10 @@
 class CManager
 	: public CWorker
 {
+protected:
+	CManager();
+	bool/*accepts line?*/ PrinterFilter(Log::LogLine&/*line ref*/);
+
 // Interface static so these checks can be made at ANY place
 protected:
 	static void AssureThreadUI();		//is DirectWork() or direct call from the main thread

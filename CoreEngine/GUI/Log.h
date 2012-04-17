@@ -8,6 +8,8 @@
 namespace Log
 {
 // internal
+	struct Workpoint;
+	class Printer;
 
 	template <typename T>
 	struct StackAligned {
@@ -71,7 +73,7 @@ namespace Log
 
 	enum EOutputType
 	{
-		CHECKPOINT,
+		CHECKPOINT,	// Workpoint
 		PUTLOG,
 		WORK_ERROR,
 		MISC
@@ -84,11 +86,12 @@ namespace Log
 	};
 
 	void PrintF(PCTSTR szFmt, const int* pParams);
+	void PrintF_Work(PCTSTR szFmt, const int* pParams, Printer& printer);
 	typedef util::Callback< void(CAtlArray<LogLine>& /*list*/, EOutputType/*chunk*/) > TFOutputCbk;
 
 
 	//extern __declspec(thread) class Printer* s_pPrinter;
-	extern __declspec(thread) struct Workpoint* s_pTop;
+	extern __declspec(thread) Workpoint* s_pTop;
 	extern TFOutputCbk s_output;
 
 	struct Workpoint
@@ -107,7 +110,7 @@ namespace Log
 			m_pPrev = Log::s_pTop;
 			Log::s_pTop = this;
 
-			m_pPrinter.ImmediateLogpoint(this);
+			m_pPrinter.ImmediatePoint(this);
 		}
 
 		~Workpoint()
@@ -124,19 +127,23 @@ namespace Log
 	{
 	public:
 		Printer();
-		typedef util::Callback< bool/*accepts line?*/(CString&/*line ref*/, EOutputType/*line source*/) > TFPrinterCbk;
+		typedef util::Callback< bool/*accepts line?*/(LogLine&/*line ref*/) > TFPrinterCbk;
 
 	// interface
 	public:
 		void SetPrefix( PCTSTR pstr );
 		void SetImmediateLog( bool b );
-		void SetPrinterFilter( TFPrinterCbk filter );
+		void SetPrintFilter( TFPrinterCbk filter );
 		CString log_output;
 
-	// internal printer functions
+	// printer functions
 	public:
-		void ImmediateLogpoint(Workpoint* pPoint);
-		void PrintF_Output(PCTSTR szFmt, const int* pParams, EOutputType type, CString& out_strline = CString());
+		void ImmediatePoint(Workpoint* pPoint);
+		void OutputSingleLine(EOutputType type, PCTSTR szFmt, const int* pParams);
+
+	// internal
+	public:
+		bool SPrintF_Line(LogLine& out_line, PCTSTR szFmt, const int* pParams);// filter and format the line
 
 		CString m_prefix;
 		bool m_immediate;
@@ -209,7 +216,7 @@ namespace Log
 #define WORK_PUTLOG(expr) \
 	do { \
 		BUILD_FMT_RECORD(RAND_IDENTIFIER(recAutoToLog), expr) \
-		Log::PrintF(RAND_IDENTIFIER(recAutoToLog).m_szFmt, RAND_IDENTIFIER(recAutoToLog).m_pParams); \
+		Log::PrintF_Work(RAND_IDENTIFIER(recAutoToLog).m_szFmt, RAND_IDENTIFIER(recAutoToLog).m_pParams, logger); \
 	}while (false)
 
 #define WORK_CHECKPOINT(expr) \

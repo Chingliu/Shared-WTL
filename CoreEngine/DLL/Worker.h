@@ -1,8 +1,6 @@
 #pragma once
 
 #include "WorkError.h"
-
-#include "../util_excpt.h"
 #include "../util_callback.h"
 
 

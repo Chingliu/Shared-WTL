@@ -29,14 +29,16 @@ public:
 	static __declspec(thread)	WorkContext g_threadCtx;	//__declspec(thread) may not work for dynamically loaded DLLs
 	static						DWORD g_dwMainThread;		//global ID of the main thread which loaded app/module
 
+
+	// context of the current thread:
 	static bool IsWorking()		{ return g_threadCtx.bRunGuard; }
 	static bool IsWorkThread()	{ return g_threadCtx.bRunThread; }
 
 // Data members
-protected:
-	HANDLE m_hThread;
+private:
 	DWORD m_ticktime;
 	util::Callback<void()> m_single_cbk;
+	bool m_thread_race;
 
 // Function members
 private:

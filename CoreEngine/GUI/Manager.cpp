@@ -16,6 +16,23 @@ void CManager::AssureWorkThreaded()
 	ASSERT( CWorker::IsWorkThread() );
 }
 
+
+CManager::CManager()
+{
+	logger.SetPrintFilter( BIND_MEM_CB(&CManager::PrinterFilter, this) );
+}
+
+bool CManager::PrinterFilter(Log::LogLine& lineref)// we are in the Manager context associated to the calling Printer, so just append the prefix
+{
+	ASSERT( !logger.m_prefix.IsEmpty() );
+
+	CString prefix;
+	prefix.Format( L"%s - ", logger.m_prefix );
+	lineref.linestr = prefix += lineref.linestr;
+
+	return true;
+}
+
 void CManager::OnErrorReport( CWorkError* source_err )// intercepts a thrown work-exception and outputs its error message
 {
 	CAtlArray<Log::LogLine> list;
@@ -25,9 +42,9 @@ void CManager::OnErrorReport( CWorkError* source_err )// intercepts a thrown wor
 		line.linestr = str;
 	};
 
-	// setup message from err (source_err) parameters
-	lAddToList( L" " );
-	lAddToList( L"-Error information--------------------------" );
+	// setup message with the error parameters (source_err)
+	lAddToList( CString() );
+	lAddToList( L"--- Error information ------------------" );
 	if( !source_err->log_msg.IsEmpty() )
 		lAddToList( CString(L"err.msg  -> ") + source_err->log_msg );
 	if( !source_err->log_descr.IsEmpty() )

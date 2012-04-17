@@ -9,6 +9,7 @@ DWORD CWorker::g_dwMainThread		= ::GetCurrentThreadId();
 
 CWorker::CWorker()
 {
+	m_thread_race = false;
 }
 
 __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
@@ -33,10 +34,10 @@ void CWorker::Run()
 	// runs guarded callback
 	m_ticktime = ::GetTickCount();
 	WorkGuard();
-	::CloseHandle(m_hThread);
 
 	ASSERT(g_threadCtx.bRunThread==true);
 	g_threadCtx.bRunThread = false;
+	m_thread_race = false;
 }
 
 LONG CALLBACK WorkVectoredHandler(PEXCEPTION_POINTERS ExceptionInfo)// The handler should not call functions that acquire synchronization objects or allocate memory
@@ -82,12 +83,15 @@ void CWorker::DirectWork( util::Callback<void()> runcbk )
 
 void CWorker::ThreadWork( util::Callback<void()> runcbk )
 {
-	ASSERT(::GetCurrentThreadId() == CWorker::g_dwMainThread);
+	ENSURE(m_thread_race==false);// system not designed to this kind of heavy-work!  ->  data-race problems
+	m_thread_race = true;
+	ASSERT(::GetCurrentThreadId() == CWorker::g_dwMainThread);// might not be the case; but it seems really dangerous  ->  data-race problems
 	ASSERT(runcbk);
 
 	m_single_cbk = runcbk;
-	m_hThread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) _ThreadProcThunk,
+	HANDLE hThread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) _ThreadProcThunk,
 			this, 0, NULL);
+	::CloseHandle(hThread);
 }
 
 void CWorker::MinWait( DWORD ms )
