@@ -12,7 +12,7 @@ public:
 // Interface
 public:
 	void CreateThemeFont( CTheme* themebase, UINT nType=0, PCTSTR face=nullptr );
-	int MeasureText( CWindow source, CString text );
+	int MeasureText( CString text, CWindow source=_wndMain );
 	void DrawText( CDCHandle dc, CRect& rcText, CString text );
 
 // Acess members

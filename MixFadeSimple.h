@@ -3,8 +3,8 @@
 
 // Debug options
 #ifdef DEBUG
-	//#define MIXFADE_TRACE
-	//#define MIXFADE_CLIP
+	#define MIXFADE_TRACE
+	#define MIXFADE_CLIP
 #else
 	#undef MIXFADE_TRACE
 	#undef MIXFADE_CLIP
@@ -36,15 +36,16 @@ public:
 		m_uFadeInitial = m_uFadePhase = 0;
 
 		memset(&m_BlendFormat, 0, sizeof(BLENDFUNCTION));
-		m_BlendFormat.BlendOp = AC_SRC_OVER; 
-		//m_BlendFormat.BlendFlags = 0; 
+		ATLASSERT(AC_SRC_OVER==0);// Sick for optimizations!
+		/*m_BlendFormat.BlendOp = AC_SRC_OVER;
+		m_BlendFormat.BlendFlags = 0;*/
 		m_BlendFormat.SourceConstantAlpha = 255;
 		m_BlendFormat.AlphaFormat = AC_SRC_ALPHA;
 	};
 
 private:
-	enum { TIMERID = 6 };
-	enum { SPEED = 15 }; // ms, WM_TIMER min resolution?
+	enum { MXF_TIMERID = 6 };
+	enum { MXF_SPEED = 15 }; // ms, WM_TIMER min resolution?
 
 // Interface
 public:
@@ -65,21 +66,18 @@ public:
 			m_render_ddb.CreateBitmap(rcTarget.Width(), rcTarget.Height(), 1, 32, nullptr);
 		if( !m_render_dc )
 			m_render_dc.CreateCompatibleDC();
-		m_render_dc.SelectBitmap(m_render_ddb);
+		m_render_dc.SelectBitmap(m_render_ddb);// might want to move-out this call
 
 		m_render_rc = rcTarget;
 		m_bSetupArea = true;
 	};
 
-	void RenderCacheDraw(CDCHandle& dcTo)
+	// >>> Returns the HDC surface to draw the render
+	CDCHandle RenderDraw()
 	{
 		ATLASSERT(!m_render_dc.IsNull());
 		m_render_dc.FillSolidRect(&m_render_rc, 0); //clears the device surface
-		dcTo = m_render_dc;
-
-	#ifdef MIXFADE_CLIP
-
-	#endif
+		return m_render_dc;
 	};
 
 	// >>> As we cache the render, we get some special behaviors:
@@ -99,12 +97,16 @@ public:
 		m_dwFadeTick = ::GetTickCount();
 
 		T* pT = static_cast<T*>(this);
-		pT->SetTimer(TIMERID, SPEED);
+		pT->SetTimer(MXF_TIMERID, MXF_SPEED);
 
 	#ifdef MIXFADE_TRACE
 		CString trace;
-		trace.Format(L"\n%s >>> FadeInitial: %d", CString(typeid(T).name()), m_uFadeInitial);
+		trace.Format(L"\n%s >>> Direction: %s; FadeInitial: %d", CString(typeid(T).name()), way==FadeOut ? L"Fade-out" : L"Fade-in", m_uFadeInitial);
 		ATLTRACE(trace);
+	#endif
+		
+	#ifdef MIXFADE_CLIP
+		ClipBitmapImage(m_render_dc.GetCurrentBitmap());
 	#endif
 	};
 
@@ -115,8 +117,8 @@ public:
 		if( !IsAnimating() ) return;
 
 		// New fade value for blending
-		const float FadeTickRate = 255.0f / (float(m_uDuration) / float(SPEED));
-		const float delta = (::GetTickCount() - m_dwFadeTick) / SPEED * FadeTickRate;
+		const float FadeTickRate = 255.0f / (float(m_uDuration) / float(MXF_SPEED));
+		const float delta = (::GetTickCount() - m_dwFadeTick) / MXF_SPEED * FadeTickRate;
 		m_uFadePhase = int(m_uFadeInitial - delta);
 		if( m_uFadePhase < 0 )
 			m_uFadePhase = 0;
@@ -136,7 +138,7 @@ public:
 		{
 			m_bAnimating = false;
 			T* pT = static_cast<T*>(this);
-			pT->KillTimer(TIMERID);
+			pT->KillTimer(MXF_TIMERID);
 		}
 	};
 
@@ -167,7 +169,7 @@ public:
 public:
 	void OnTimer(UINT nIDEvent)
 	{
-		if( nIDEvent == TIMERID )
+		if( nIDEvent == MXF_TIMERID )
 		{
 			T* pT = static_cast<T*>(this);
 			pT->Invalidate(FALSE);

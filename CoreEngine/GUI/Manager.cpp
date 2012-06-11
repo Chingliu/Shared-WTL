@@ -44,7 +44,7 @@ void CManager::OnErrorReport( CWorkError* source_err )// intercepts a thrown wor
 
 	// setup message with the error parameters (source_err)
 	lAddToList( CString() );
-	lAddToList( L"--- Error information ------------------" );
+	lAddToList( L"---Error details-------------------------" );
 	if( !source_err->log_msg.IsEmpty() )
 		lAddToList( CString(L"err.msg  -> ") + source_err->log_msg );
 	if( !source_err->log_descr.IsEmpty() )

@@ -46,7 +46,7 @@ private:
 	void WorkGuard();
 
 // Interface - work process
-protected:
+public:
 	CWorkError err;
 	Log::Printer logger;
 

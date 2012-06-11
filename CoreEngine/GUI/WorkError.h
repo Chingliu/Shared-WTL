@@ -28,7 +28,7 @@ private:
 
 public:
 	// Interface -----------------------------------------------------------------
-	void ThrowError();
+	inline void ThrowError();
 
 	// Acess members -------------------------------------------------------------
 	CString log_msg;	// importance level: 1

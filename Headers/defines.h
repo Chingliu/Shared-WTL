@@ -23,6 +23,19 @@
 	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_RELEASE"
 #endif
 
+namespace WTL
+{
+	namespace RunTimeHelper
+	{
+		inline bool IsWin8()
+		{
+			OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
+			BOOL bRet = ::GetVersionEx(&ovi);
+			return ((bRet != FALSE) && (ovi.dwMajorVersion >= 6) && (ovi.dwMinorVersion >= 2));
+		}
+	}
+}
+
 
 #define DWORD_FILL(byte_size)										\
 	static_assert((byte_size)%sizeof(DWORD) == 0,					\

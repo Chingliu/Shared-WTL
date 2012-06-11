@@ -221,4 +221,4 @@ namespace Log
 
 #define WORK_CHECKPOINT(expr) \
 	BUILD_FMT_RECORD(RAND_IDENTIFIER(var##_Record), expr) \
-	Log::Workpoint RAND_IDENTIFIER(var)(RAND_IDENTIFIER(var##_Record), logger);
+	Log::Workpoint RAND_IDENTIFIER(var)(RAND_IDENTIFIER(var##_Record), logger)

@@ -3,6 +3,4 @@
 
 class CAdapter
 {
-public:
-	CAdapter();
 };

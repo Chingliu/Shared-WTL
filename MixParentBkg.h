@@ -3,7 +3,7 @@
 #include "ToolsDrawing\Draw.h"
 
 
-// What about testing CThemeImpl::DrawThemeParentBackground()
+// What about testing CThemeImpl::DrawThemeParentBackground(), that is DrawThemeParentBackground() Win32 API
 
 template<class T>
 class CMixParentBkg
@@ -21,7 +21,7 @@ protected:
 public:
 	// TODO: It might be the case where the background needed is not from the direct parent,
 	//		 but one that is higher in the parent hierarchy, so it will need an additional parameter: HWND hwndParent, or maybe an int
-	void SetupBackgorund(CWindow parent=NULL)
+	void SetupBackground(CWindow parent=NULL)
 	{
 		ATLASSERT(m_imgBack.IsNull());
 
@@ -52,7 +52,7 @@ public:
 	void DrawBackground(HDC dc)
 	{
 		if( m_imgBack.IsNull() )
-			SetupBackgorund();
+			SetupBackground();
 		m_imgBack.BitBlt(dc, 0, 0);
 	};
 };

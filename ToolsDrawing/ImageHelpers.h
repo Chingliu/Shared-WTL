@@ -1,7 +1,9 @@
 #pragma once
 
 
-ATLINLINE HBITMAP AtlLoadGdiplusImage(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGorID type = (UINT) 0)
+// inline else linker gives an "already defined" error
+
+inline HBITMAP AtlLoadGdiplusImage(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGorID type = (UINT) 0)
 {
    USES_CONVERSION;
    static bool s_bInitied = false;
@@ -45,7 +47,7 @@ ATLINLINE HBITMAP AtlLoadGdiplusImage(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGo
    return hBitmap;
 }
 
-ATLINLINE BOOL AtlReplaceColorDib32(HDC hDC, HBITMAP hBitmap, DWORD dwKey, DWORD dwReplace = 0UL, DWORD dwShowColor = 0xFF000000)
+inline BOOL AtlReplaceColorDib32(HDC hDC, HBITMAP hBitmap, DWORD dwKey, DWORD dwReplace = 0UL, DWORD dwShowColor = 0xFF000000)
 {
    ::GdiFlush();
    BITMAP bm = { 0 };
@@ -79,7 +81,7 @@ ATLINLINE BOOL AtlReplaceColorDib32(HDC hDC, HBITMAP hBitmap, DWORD dwKey, DWORD
    return bRes;
 }
 
-ATLINLINE HFONT AtlGetDefaultShellFont()
+inline HFONT AtlGetDefaultShellFont()
 {
    static CFont s_font;
    if( s_font.IsNull() ) {
@@ -101,7 +103,7 @@ ATLINLINE HFONT AtlGetDefaultShellFont()
 
 #if defined(_WTL_USE_CSTRING) || defined(__ATLSTR_H__)
 
-ATLINLINE void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, CString& sResult)
+inline void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, CString& sResult)
 {
    ATLASSERT(pImage);
    UINT size = pImage->GetPropertyItemSize(uPropId);
@@ -115,7 +117,7 @@ ATLINLINE void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, CStri
 
 #endif   // _WTL_USE_CSTRING
 
-ATLINLINE void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, long& lResult)
+inline void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, long& lResult)
 {
    ATLASSERT(pImage);
    UINT size = pImage->GetPropertyItemSize(uPropId);
@@ -128,7 +130,7 @@ ATLINLINE void GdipGetBitmapProperty(Gdiplus::Image* pImage, UINT uPropId, long&
    free(pPropItem);
 }
 
-ATLINLINE Gdiplus::Status GdipCreateDIBFromGdiplusBitmap(Gdiplus::Bitmap* pBitmap, HBITMAP* hbmReturn)
+inline Gdiplus::Status GdipCreateDIBFromGdiplusBitmap(Gdiplus::Bitmap* pBitmap, HBITMAP* hbmReturn)
 {
    Gdiplus::Status status;
    UINT uWidth = pBitmap->GetWidth();
@@ -167,7 +169,7 @@ ATLINLINE Gdiplus::Status GdipCreateDIBFromGdiplusBitmap(Gdiplus::Bitmap* pBitma
    return Gdiplus::Ok;
 }
 
-ATLINLINE Gdiplus::Bitmap* GdipGetPngBitmapFromResource(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGorID type = (UINT) 0)
+inline Gdiplus::Bitmap* GdipGetPngBitmapFromResource(ATL::_U_STRINGorID bitmap, ATL::_U_STRINGorID type = (UINT) 0)
 {
    CResource res;
    if( !res.Load(type, bitmap) ) return NULL;
@@ -186,8 +188,9 @@ ATLINLINE Gdiplus::Bitmap* GdipGetPngBitmapFromResource(ATL::_U_STRINGorID bitma
    return pBitmap;
 }
 
-ATLINLINE void ClipBitmapImage( CBitmapHandle bmp )
+inline void ClipBitmapImage( CBitmapHandle bmp )
 {
+	ASSERT(bmp);
 	CImage img;
 	img.Attach(bmp);
 
@@ -220,7 +223,7 @@ ATLINLINE void ClipBitmapImage( CBitmapHandle bmp )
 	img.Detach();
 }
 
-ATLINLINE void ClipBitmapImage( Bitmap* bmp )
+inline void ClipBitmapImage( Bitmap* bmp )
 {
 	HBITMAP hbmp;
 	if( GdipCreateDIBFromGdiplusBitmap(bmp, &hbmp)!=Gdiplus::Ok )
@@ -231,7 +234,10 @@ ATLINLINE void ClipBitmapImage( Bitmap* bmp )
 	ClipBitmapImage(hbmp);
 }
 
-ATLINLINE void ClipImageList( CImageList& imglist )
+
+#ifdef __ATLCTRLS_H__
+
+inline void ClipImageList( CImageList& imglist )
 {
 	IMAGEINFO imginfo;
 	imglist.GetImageInfo( 0, &imginfo );
@@ -247,3 +253,5 @@ ATLINLINE void ClipImageList( CImageList& imglist )
 	::SetClipboardData(CF_BITMAP, memDC.m_bmp.m_hBitmap);
 	::CloseClipboard();
 }
+
+#endif

@@ -13,17 +13,18 @@ CWorkError::CWorkError()
 
 void CWorkError::ThrowError()
 {
+	ASSERT(false);
 	throw CWorkException(this);
 }
 
 void CWorkError::WinHandler( bool res )
 {
 	if( !res )
-		throw CWorkException(this);
+		ThrowError();
 }
 
 void CWorkError::NormHandler( bool res )
 {
 	if( !res )
-		throw CWorkException(this);
+		ThrowError();
 }

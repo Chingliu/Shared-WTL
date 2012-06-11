@@ -9,7 +9,7 @@ CSciterHostWnd::CSciterHostWnd()
 
 LRESULT CSciterHostWnd::on_callback_host(LPSCN_CALLBACK_HOST pnmld)
 {
-#ifdef DEBUG
+//#ifdef DEBUG
 	switch( pnmld->channel )
 	{
 		case 0: // 0 - stdin, read from stdin requested, put string into pnmld->r
@@ -23,11 +23,15 @@ LRESULT CSciterHostWnd::on_callback_host(LPSCN_CALLBACK_HOST pnmld)
 			break;
 		case 2: // 2 - stderr, "stderr << something" requested or error happened, 
 				//     pnmld->p1 is string to output.
+			{
+				CString str = pnmld->p1.to_string().c_str();
+				OutputDebugString(str);
+			}
 			break;
 		default: // view.callback(channel,p1,p2) call from script
 			break;
 	}
-#endif
+//#endif
 
 	return 0;
 }
@@ -38,7 +42,7 @@ int CSciterHostWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	DefWindowProc();
 	setup_callback();
-	::SciterSetOption(m_hWnd, SCITER_TRANSPARENT_WINDOW, 1);
+	::SciterSetOption(m_hWnd, SCITER_TRANSPARENT_WINDOW, CDwm().DwmIsCompositionEnabled());
 	::SciterSetOption(m_hWnd, SCITER_FONT_SMOOTHING, 3);
 
 	SetMsgHandled(FALSE);

@@ -38,7 +38,7 @@ protected:
 	TApdater* m_linked_adapter;
 
 // Interface
-protected:
+public:
 	void SetAdapter(TApdater* adapter)
 	{
 		m_linked_adapter = adapter;
@@ -53,7 +53,7 @@ protected:
 	CAtlArray<TApdater*> m_linked_adapters;
 	
 // Interface
-protected:
+public:
 	void AddAdapter(TApdater* adapter)
 	{
 		m_linked_adapters.Add(adapter);

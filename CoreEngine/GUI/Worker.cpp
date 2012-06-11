@@ -84,7 +84,7 @@ void CWorker::DirectWork( util::Callback<void()> runcbk )
 void CWorker::ThreadWork( util::Callback<void()> runcbk )
 {
 	ENSURE(m_thread_race==false);// system not designed to this kind of heavy-work!  ->  data-race problems
-	m_thread_race = true;
+	m_thread_race = true;		 // you better think a GUI sync alternative
 	ASSERT(::GetCurrentThreadId() == CWorker::g_dwMainThread);// might not be the case; but it seems really dangerous  ->  data-race problems
 	ASSERT(runcbk);
 

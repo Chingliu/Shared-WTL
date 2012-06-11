@@ -10,14 +10,14 @@ namespace Log
 
 	Printer::Printer()
 	{
-		m_immediate = true;
+		m_immediate = false;
 		m_filter = util::NullCallback();
 	}
 
 	void Printer::ImmediatePoint(Workpoint* pPoint)
 	{
 		if( m_immediate )
-			OutputSingleLine(CHECKPOINT, pPoint->m_szFmt, pPoint->m_pParams);
+			OutputSingleLine( CHECKPOINT, pPoint->m_szFmt, pPoint->m_pParams );
 	}
 	void Printer::OutputSingleLine(EOutputType type, PCTSTR szFmt, const int* pParams)
 	{
@@ -32,7 +32,7 @@ namespace Log
 		}
 	}
 
-	bool Printer::SPrintF_Line(LogLine& out_line, PCTSTR szFmt, const int* pParams)
+	bool Printer::SPrintF_Line(LogLine& out_line, PCTSTR szFmt, const int* pParams)// filter and format the line
 	{
 		out_line.linestr.FormatV(szFmt, (va_list) pParams);
 

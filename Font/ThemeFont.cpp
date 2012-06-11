@@ -31,7 +31,7 @@ void CThemeFont::CreateThemeFont( CTheme* themebase, UINT nType, PCTSTR face )
 	CreateStyled(nType, face);
 }
 
-int CThemeFont::MeasureText( CWindow source, CString text )
+int CThemeFont::MeasureText( CString text, CWindow source )
 {
 	CRect rcMeasure;
 	CWindowDC dc( source );
@@ -46,7 +46,8 @@ int CThemeFont::MeasureText( CWindow source, CString text )
 	} else {
 		dc.DrawText( text, -1, &rcMeasure, uFormat | DT_CALCRECT );
 	}
-	return rcMeasure.Width();
+	ATLASSERT(rcMeasure.left==0);
+	return rcMeasure.right;// rcMeasure.Width();
 }
 
 void CThemeFont::DrawText( CDCHandle dc, CRect& rcText, CString text )
