@@ -5,7 +5,7 @@
 void CSimpleBitmap::GetMeasures()
 {
 	BITMAP binfo;
-	GetBitmap( &binfo );
+	ENSURE( GetBitmap(binfo) );
 	size.SetSize( binfo.bmWidth, binfo.bmHeight );
 	ptcenter.SetPoint( binfo.bmWidth/2, binfo.bmHeight/2 );
 }
@@ -13,7 +13,7 @@ void CSimpleBitmap::GetMeasures()
 void CSimpleBitmap::LoadBitmap( UINT resID )
 {
 	//DeleteObject();
-	ATLENSURE( CBitmap::LoadBitmap(resID) );
+	ENSURE( CBitmap::LoadBitmap(resID) );
 	GetMeasures();
 }
 

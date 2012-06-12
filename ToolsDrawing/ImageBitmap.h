@@ -10,7 +10,6 @@ class CImageBitmap
 {
 public:
 	CImageBitmap();
-	~CImageBitmap();
 
 // Interface
 public:

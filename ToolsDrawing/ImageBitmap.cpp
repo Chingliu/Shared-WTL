@@ -15,10 +15,6 @@ CImageBitmap::CImageBitmap()
 {
 }
 
-CImageBitmap::~CImageBitmap()
-{
-}
-
 // Interface
 BOOL CImageBitmap::LoadImageResource( UINT nIDRes, PCTSTR type )
 {

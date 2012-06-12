@@ -77,7 +77,7 @@ public:
 	{
 		ATLASSERT(!m_render_dc.IsNull());
 		m_render_dc.FillSolidRect(&m_render_rc, 0); //clears the device surface
-		return m_render_dc;
+		return (HDC) m_render_dc;
 	};
 
 	// >>> As we cache the render, we get some special behaviors:

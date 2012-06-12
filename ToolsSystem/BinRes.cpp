@@ -17,7 +17,7 @@ CBinRes::CBinRes( UINT nIDRes, PCTSTR type )
 
 	hResLoaded = ::LoadResource( ModuleHelper::GetResourceInstance(), hRsrc );
 	dwSizeRes = ::SizeofResource( ModuleHelper::GetResourceInstance(), hRsrc );
-	ATLENSURE( hResLoaded && m_size );
+	ATLENSURE( hResLoaded && dwSizeRes );
 
 	m_resAdrr = ::LockResource( hResLoaded );
 	m_size = dwSizeRes;
