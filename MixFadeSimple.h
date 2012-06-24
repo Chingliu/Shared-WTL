@@ -3,8 +3,8 @@
 
 // Debug options
 #ifdef DEBUG
-	#define MIXFADE_TRACE
-	#define MIXFADE_CLIP
+	//#define MIXFADE_TRACE
+	//#define MIXFADE_CLIP
 #else
 	#undef MIXFADE_TRACE
 	#undef MIXFADE_CLIP
@@ -72,7 +72,7 @@ public:
 		m_bSetupArea = true;
 	};
 
-	// >>> Returns the HDC surface to draw the render
+	// >>> Returns the HDC surface to draw the render, has an apropriated bitmap surface already selected
 	CDCHandle RenderDraw()
 	{
 		ATLASSERT(!m_render_dc.IsNull());
