@@ -1,4 +1,4 @@
-// Idea and source taken from:
+// Source taken from:
 // http://www.codeproject.com/KB/cpp/CPPCallback.aspx
 
 #pragma once

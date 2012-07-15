@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Manager.h"
-
 
 template<class TMixIn, class TRegister>
 class CEngineControllerT :
@@ -10,10 +8,10 @@ class CEngineControllerT :
 public:
 	CEngineControllerT()
 	{
-		m_managers = new TRegister;
-		ATLENSURE(m_managers);
-
 		_Module.GetMessageLoop()->AddMessageFilter(this);
+
+		m_managers = new TRegister;
+		ENSURE(m_managers);
 	}
 	~CEngineControllerT()
 	{
@@ -23,20 +21,21 @@ public:
 // Data members
 protected:
 	TRegister* m_managers;
+	//TMixIn*
 
 // Overrides
 private:
 	virtual BOOL PreTranslateMessage(MSG* pMsg)
 	{
-		if( pMsg->hwnd==_wndMain && pMsg->message==WMU_SIGNAL_SEND )
+		if( pMsg->hwnd==_wndMain )
 		{
-			::SetEvent( (HANDLE) pMsg->wParam );
-		}
+			if( pMsg->message==WMU_SIGNAL_SEND )
+			{
+				::SetEvent( (HANDLE) pMsg->wParam );
+			}/* else if( pMsg->message==WMU_SIGNAL_POST ) {
 
-		if( pMsg->hwnd==_wndMain && pMsg->message==WMU_SIGNAL_POST )
-		{
+			}*/
 		}
-
 		return FALSE;
 	}
 };

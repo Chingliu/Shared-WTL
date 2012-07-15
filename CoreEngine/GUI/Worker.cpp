@@ -31,7 +31,7 @@ void CWorker::Run()
 	ASSERT(g_threadCtx.bRunThread==false);
 	g_threadCtx.bRunThread = true;
 
-	// runs guarded callback
+	// calls internal guard routine
 	m_ticktime = ::GetTickCount();
 	WorkGuard();
 
@@ -42,18 +42,23 @@ void CWorker::Run()
 
 LONG CALLBACK WorkVectoredHandler(PEXCEPTION_POINTERS ExceptionInfo)// The handler should not call functions that acquire synchronization objects or allocate memory
 {
-	if( CWorker::g_threadCtx.bVecEnter )// handles only the first exception
-	{
+	if( CWorker::g_threadCtx.bVecEnter )// handles only the first exception cause catch(){} handlers can trigger/rethrow exceptions
+	{									// tested ::RemoveVectoredExceptionHandler and it dont work here
 		CWorker::g_threadCtx.bVecEnter = false;
-		Log::OutputStackPoints();
+		Log::SaveStackCheckpoints(*CWorker::g_threadCtx.pLogList);
 	}
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
 void CWorker::WorkGuard()
 {
-	ASSERT(g_threadCtx.bRunGuard==false);
+	ASSERT(g_threadCtx.bRunGuard==false);// nesting work guards? not rdy for it yet, should work with different threads (ThreadWork)
 	g_threadCtx.bRunGuard = true;
+
+	// setup logging
+	Log::LogList chks_list;
+	g_threadCtx.pLogList = &chks_list;
+	err.ResetMessages();
 
 	// install exception monitor
 	g_threadCtx.bVecEnter = true;
@@ -64,7 +69,10 @@ void CWorker::WorkGuard()
 	{
 		m_single_cbk();
 	} catch( CWorkError::CWorkException& e ) {
-		OnErrorReport( e.perr );
+		OnErrorReport( e, chks_list );
+	} catch(...) {
+		ASSERT(false);
+		RELEASE_ONLY(throw);
 	}
 	::RemoveVectoredExceptionHandler( hVectorHandle );
 

@@ -8,12 +8,12 @@ void CManager::AssureThreadUI()
 }
 void CManager::AssureWorkGuarded()
 {
-	ASSERT( CWorker::IsWorking() );
+	ASSERT( CWorker::IsWorkingGuard() );
 }
 void CManager::AssureWorkThreaded()
 {
-	ASSERT( CWorker::IsWorking() );
-	ASSERT( CWorker::IsWorkThread() );
+	ASSERT( CWorker::IsWorkingGuard() );
+	ASSERT( CWorker::IsWorkThreaded() );
 }
 
 
@@ -27,37 +27,47 @@ bool CManager::PrinterFilter(Log::LogLine& lineref)// we are in the Manager cont
 	ASSERT( !logger.m_prefix.IsEmpty() );
 
 	CString prefix;
-	prefix.Format( L"%s - ", logger.m_prefix );
+	if( lineref.type==Log::CHECKPOINT )
+		prefix.Format( L"  %s: ", logger.m_prefix );
+	else
+		prefix.Format( L"%s: ", logger.m_prefix );
 	lineref.linestr = prefix += lineref.linestr;
 
-	return true;
+	return true;// accepts line
 }
 
-void CManager::OnErrorReport( CWorkError* source_err )// intercepts a thrown work-exception and outputs its error message
+void CManager::OnErrorReport( const CWorkErrorData& errd, Log::LogList& chks_list )// thrown work-exception, now outputs its error message
 {
-	CAtlArray<Log::LogLine> list;
-	auto lAddToList = [&list](CString str) {
-		Log::LogLine& line = list[list.Add()];
-		line.type = Log::WORK_ERROR;
-		line.linestr = str;
-	};
-
+	Log::LogList list;
+	
 	// setup message with the error parameters (source_err)
-	lAddToList( CString() );
-	lAddToList( L"---Error details-------------------------" );
-	if( !source_err->log_msg.IsEmpty() )
-		lAddToList( CString(L"err.msg  -> ") + source_err->log_msg );
-	if( !source_err->log_descr.IsEmpty() )
-		lAddToList( CString(L"err.desc -> ") + source_err->log_descr );
+	list.AddText<Log::WORK_ERROR>();
+	list.AddText<Log::WORK_ERROR>( L"[Application exception] ---------------------" );
+	list.AddText<Log::WORK_ERROR>( L"> Context (top is the most recent call)" );
+	list.Append( chks_list );
+
+	list.AddText<Log::WORK_ERROR>( L"> Error details" );
+	if( errd.log_msg.IsEmpty() && errd.log_descr.IsEmpty() )
+		list.AddText<Log::WORK_ERROR>( L"  Lazy programmer has provided none!" );
+	else
+	{
+		if( !errd.log_msg.IsEmpty() )
+			list.AddText<Log::WORK_ERROR>( L"  err.msg  -> " + errd.log_msg );
+		if( !errd.log_descr.IsEmpty() )
+			list.AddText<Log::WORK_ERROR>( L"  err.desc -> " + errd.log_descr );
+	}
+	list.AddText<Log::WORK_ERROR>( L"---------------------------------------------" );
 
 	// calls application output handler
-	Log::s_output(list, Log::WORK_ERROR);
+	ASSERT(Log::s_output);
+	Log::s_output(list, Log::ERROR_BLOCK);
 }
 
 
 void CAdapterLink::SendSignal()
 {
-	ATLASSERT( ::GetCurrentThreadId() != CWorker::g_dwMainThread ); //only for threaded work else will cause a dead-lock!
+	CAtlList<int> test;
+	ASSERT( ::GetCurrentThreadId() != CWorker::g_dwMainThread ); //only for threaded work else will cause a dead-lock!
 
 	CHandle event_lock( ::CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE | DELETE) );
 	_wndMain.PostMessage( WMU_SIGNAL_SEND, (WPARAM) (HANDLE) event_lock );// not using SendMessage because it goes directly to the WinProc so can not be PreTranslated

@@ -15,7 +15,7 @@ class CManager
 {
 protected:
 	CManager();
-	bool/*accepts line?*/ PrinterFilter(Log::LogLine&/*line ref*/);
+	bool PrinterFilter(Log::LogLine&);
 
 // Interface static so these checks can be made at ANY place
 protected:
@@ -25,7 +25,7 @@ protected:
 
 // Overrides
 protected:
-	virtual void OnErrorReport( CWorkError* source_err ) override;
+	virtual void OnErrorReport( const CWorkErrorData& source_err, Log::LogList& chks_list ) override;
 };
 
 

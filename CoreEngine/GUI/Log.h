@@ -73,10 +73,10 @@ namespace Log
 
 	enum EOutputType
 	{
-		CHECKPOINT,	// Workpoint
 		PUTLOG,
+		CHECKPOINT,
 		WORK_ERROR,
-		MISC
+		ERROR_BLOCK
 	};
 
 	struct LogLine
@@ -85,9 +85,31 @@ namespace Log
 		CString linestr;
 	};
 
+	class LogList
+		: public CAtlArray<LogLine>
+	{
+	public:
+		template <EOutputType TLineType>
+		LogLine& AddLine()
+		{
+			LogLine& line = GetAt( Add() );
+			line.type = TLineType;
+			return line;
+		};
+
+		template <EOutputType TLineType>
+		CString& AddText(CString str = CString())
+		{
+			//LogLine line = {TLineType, str};
+			LogLine& line = GetAt( Add() );
+			line.type = TLineType;
+			return line.linestr = str;
+		};
+	};
+
 	void PrintF(PCTSTR szFmt, const int* pParams);
 	void PrintF_Work(PCTSTR szFmt, const int* pParams, Printer& printer);
-	typedef util::Callback< void(CAtlArray<LogLine>& /*list*/, EOutputType/*chunk*/) > TFOutputCbk;
+	typedef util::Callback< void(LogList& /*list*/, EOutputType/*chunk*/) > TFOutputCbk;
 
 
 	//extern __declspec(thread) class Printer* s_pPrinter;
@@ -152,8 +174,9 @@ namespace Log
 
 
 // interface
-	void SetGlobalOutput(TFOutputCbk cbk);
-	void OutputStackPoints();	// outputs the log chain of the current thread
+	void SetGlobalOutput( TFOutputCbk cbk );
+	void SaveStackCheckpoints( LogList& list );	// saves log chain of the current thread
+	void OutputStackCheckpoints();								// and this directly outputs it, NYU
 
 
 // TBD
@@ -195,6 +218,7 @@ namespace Log
 } // namespace Log
 
 
+
 // Internally-used macro
 #define BUILD_FMT_RECORD(rec, expr) \
 	Log::Record<sizeof(Log::SizeCalc() << expr)> rec; \
@@ -206,7 +230,7 @@ namespace Log
 #define RAND_IDENTIFIER(prefix) RAND_IDENTIFIER_1(prefix, __LINE__)
 
 
-// Checkpoint - no working context
+// No working context
 /*#define CHECKPOINT(expr) \
 	BUILD_FMT_RECORD(RAND_IDENTIFIER(var##_Record), expr) \
 	Log::Checkpoint RAND_IDENTIFIER(var)(RAND_IDENTIFIER(var##_Record));

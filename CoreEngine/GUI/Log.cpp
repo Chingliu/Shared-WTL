@@ -4,6 +4,7 @@
 
 namespace Log
 {
+	// Printer class
 	void Printer::SetPrefix( PCTSTR pstr )	{ m_prefix = pstr; }
 	void Printer::SetImmediateLog( bool b )	{ m_immediate = b; }
 	void Printer::SetPrintFilter( TFPrinterCbk filter ) { m_filter = filter; }
@@ -24,7 +25,7 @@ namespace Log
 		LogLine line = { type };
 		if( SPrintF_Line(line, szFmt, pParams) )
 		{
-			CAtlArray<Log::LogLine> list;
+			LogList list;
 			list.Add(line);
 
 			ENSURE(Log::s_output);
@@ -41,23 +42,29 @@ namespace Log
 		return true;
 	}
 
-
+	// Global interface
 	void SetGlobalOutput(TFOutputCbk cbk)
 	{
 		s_output = cbk;
 	}
-	void OutputStackPoints()
+	void SaveStackCheckpoints(LogList& list)
 	{
-		// fill a list with log lines
-		CAtlArray<Log::LogLine> list;
-		auto lAddLine = [&list]() -> Log::LogLine& {
-			Log::LogLine& line = list[list.Add()];
-			line.type = Log::CHECKPOINT;
-			return line;
-		};
+		if( Log::s_pTop==nullptr )
+			return;
 
 		for( const Workpoint* pPoint = Log::s_pTop; pPoint; pPoint = pPoint->m_pPrev )
-			pPoint->m_pPrinter.SPrintF_Line( lAddLine(), pPoint->m_szFmt, pPoint->m_pParams );
+		{
+			pPoint->m_pPrinter.SPrintF_Line(
+				list.AddLine<Log::CHECKPOINT>(),
+				pPoint->m_szFmt,
+				pPoint->m_pParams
+			);
+		}
+	}
+	void OutputStackCheckpoints()
+	{
+		LogList list;
+		SaveStackCheckpoints(list);
 
 		// outputs list
 		ENSURE(Log::s_output);

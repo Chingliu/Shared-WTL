@@ -1,16 +1,25 @@
 #pragma once
 
 
+struct CWorkErrorData
+{
+	// Acess members -------------------------------------------------------------
+	CString log_msg;	// importance level: 1
+	CString log_descr;	// importance level: 2
+};
+
+
 class CWorkError
+	: public CWorkErrorData
 {
 public:
 	CWorkError();
 
-	class CWorkException
-	{
+	class CWorkException		// to be mantained inside here for better recognization, 
+		: public CWorkErrorData // mainly cause CWorkError exception is directly thrown from CWorkError
+	{					
 	public:
-		CWorkException(CWorkError* err) : perr(err) {}
-		CWorkError* perr;
+		CWorkException(const CWorkError* err) : CWorkErrorData(*err) {}
 	};
 
 // Function members
@@ -27,12 +36,9 @@ private:
 	};
 
 public:
-	// Interface -----------------------------------------------------------------
+	// Interface functions -------------------------------------------------------
+	void ResetMessages();
 	inline void ThrowError();
-
-	// Acess members -------------------------------------------------------------
-	CString log_msg;	// importance level: 1
-	CString log_descr;	// importance level: 2
 
 	// Handlers ------------------------------------------------------------------
 	// >>> Win32 errors
@@ -45,7 +51,7 @@ public:
 	class : public OperatorHandler // BOOL
 	{
 	public:
-		void operator =(BOOL res)	{ m_errhost->WinHandler(res!=FALSE); } //there can be functions which do not return exactly TRUE, but a number > TRUE, probably when returning a DWORD
+		void operator =(BOOL res)	{ m_errhost->WinHandler(res!=FALSE); }
 		void operator =(void* res)	{ m_errhost->WinHandler(res!=nullptr); }
 	} win_handler;
 

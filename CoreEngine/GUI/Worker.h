@@ -18,12 +18,10 @@ public:
 public:
 	struct WorkContext
 	{
-		// -bRunGuard:	flags if running from a Worker guarded callback
-		// -bRunThread:	flags if its a Worker spawned thread
-		bool bRunGuard;	//running thread is Work guarded
-		bool bRunThread;//running thread was spawned by a Worker instance
-		
+		bool bRunGuard;	//flags if running from a Worker guarded callback	- so running thread is Work guarded
+		bool bRunThread;//flags if its a Worker spawned thread				- so running thread was spawned by a Worker instance
 		bool bVecEnter;
+		Log::LogList* pLogList;
 	};
 
 	static __declspec(thread)	WorkContext g_threadCtx;	//__declspec(thread) may not work for dynamically loaded DLLs
@@ -31,8 +29,8 @@ public:
 
 
 	// context of the current thread:
-	static bool IsWorking()		{ return g_threadCtx.bRunGuard; }
-	static bool IsWorkThread()	{ return g_threadCtx.bRunThread; }
+	static bool IsWorkingGuard()	{ return g_threadCtx.bRunGuard; }
+	static bool IsWorkThreaded()	{ return g_threadCtx.bRunThread; }
 
 // Data members
 private:
@@ -56,5 +54,5 @@ public:
 
 // Interface - overridable
 protected:
-	virtual void OnErrorReport( CWorkError* source_err ) {}
+	virtual void OnErrorReport( const CWorkErrorData& source_err, Log::LogList& chks_list ) {}
 };
