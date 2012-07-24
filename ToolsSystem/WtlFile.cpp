@@ -16,11 +16,11 @@ bool CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 {
 	Close();
 	
-	if( !::GetFullPathName( lpszFileName, MAX_PATH, m_strFileName.GetBuffer(MAX_PATH), NULL) )
-		ATLASSERT( FALSE );
+	if( !::GetFullPathName( lpszFileName, MAX_PATH, m_strFileName.GetBuffer(MAX_PATH), nullptr) )// will convert relative paths to absolute
+		ASSERT(false);
 
 	// map read/write mode
-	ATLASSERT((modeRead|modeWrite|modeReadWrite) == 3);
+	ASSERT((modeRead|modeWrite|modeReadWrite) == 3);
 	DWORD dwAccess = 0;
 	switch (nOpenFlags & 3)
 	{
@@ -34,7 +34,7 @@ bool CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 		dwAccess = GENERIC_READ | GENERIC_WRITE;
 		break;
 	default:
-		ATLASSERT(FALSE);  // invalid share mode
+		ASSERT(false);  // invalid share mode
 	}
 
 	// map share mode
@@ -42,7 +42,7 @@ bool CWtlFile::Open( PCTSTR lpszFileName, UINT nOpenFlags )
 	switch (nOpenFlags & 0x70)    // map compatibility mode to exclusive
 	{
 	default:
-		ATLASSERT(FALSE);  // invalid share mode?
+		ASSERT(false);  // invalid share mode?
 	case shareCompat:
 	case shareExclusive:
 		dwShareMode = 0;
@@ -100,7 +100,7 @@ bool CWtlFile::Delete()
 
 DWORD CWtlFile::Read(LPVOID lpBuf, DWORD nCount)
 {
-	ATLASSERT(lpBuf!=NULL);
+	ASSERT(lpBuf!=NULL);
 	if (nCount == 0)
 		return 0;
 
@@ -109,15 +109,22 @@ DWORD CWtlFile::Read(LPVOID lpBuf, DWORD nCount)
 	return dwBytesRead;
 }
 
+bool CWtlFile::ReadContent(CAtlArray<BYTE>& buff)
+{
+	DWORD size = GetLength();
+	buff.SetCount(size);
+	return Read(buff.GetData(), size)==size;
+}
+
 bool CWtlFile::Write(LPCVOID lpBuf, DWORD nCount)
 {
-	ATLASSERT(lpBuf!=NULL);
+	ASSERT(lpBuf!=NULL);
 	if (nCount == 0)
 		return false;
 
 	DWORD dwBytesWritten;
 	if( !::WriteFile(m_hFile, lpBuf, nCount, &dwBytesWritten, NULL) ) return false;
-	ATLASSERT( dwBytesWritten==nCount );
+	ASSERT( dwBytesWritten==nCount );
 	return true;
 }
 
@@ -126,7 +133,7 @@ void CWtlFile::WriteEndOfLine()
 	DWORD dwBytesWritten;
 	BYTE buffCRLF[] = {'\r','\n'};
 	::WriteFile(m_hFile, buffCRLF, 2, &dwBytesWritten, NULL);
-	ATLASSERT( dwBytesWritten==2 );
+	ASSERT( dwBytesWritten==2 );
 }
 
 bool CWtlFile::Flush()
@@ -152,7 +159,7 @@ DWORD CWtlFile::SeekToBegin()
 DWORD CWtlFile::GetPosition()
 {
 	DWORD dwPos = ::SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
-	ATLASSERT(dwPos!=-1);
+	ASSERT(dwPos!=-1);
 	return dwPos;
 }
 
@@ -198,3 +205,48 @@ bool CTemporaryFile::TempFile( CString& outpath )
 	return Open( outpath, CWtlFile::modeWrite | CWtlFile::modeCreate | CWtlFile::shareExclusive );
 }
 
+
+bool CTextFile::ReadUTF16LE(CStringW& refstr)	// Reads a UTF-16 enconded text-file, removing a possible BOM header
+{												// Note:	in UTF-16 each character is 2 or 4-bytes long, this func wont work if it has 4-bytes chars =(
+	DWORD file_size = GetLength();				//			Windows works with UCS-2, always 2-byte long characters
+	if( file_size==0 )
+		return true;
+
+// Reads the 2-bytes header
+	static_assert( sizeof(wchar_t)==2, "WTF?" );
+	wchar_t header;
+	if( !Read(&header, 2) )// there should be at least 2 bytes
+		return false;
+
+	int text_length = file_size/2;
+	wchar_t* buff = refstr.GetBuffer( text_length );
+
+// Checks a possible UTF-16 BOM
+	if( header == L'\xFEFF' )
+		text_length--;
+	else
+		buff++[0] = header;// no bom header
+
+// Reads remaining text to the buffer
+	file_size -= 2;
+	if( !Read(buff, file_size)==file_size )
+		return false;
+
+	//int chars = size/2;
+	refstr.ReleaseBufferSetLength( text_length );
+	return false;
+}
+
+/*
+Old version that does not removes the BOM
+bool CTextFile::ReadUTF16LE(CStringW& refstr)
+{
+	DWORD size = GetLength();
+	void* buff = refstr.GetBuffer( size/2 );
+	if( !Read(buff, size)==size )
+		return false;
+
+	refstr.ReleaseBufferSetLength( size/2 );
+	return false;
+}
+*/

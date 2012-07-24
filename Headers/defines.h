@@ -42,7 +42,7 @@ namespace WTL
 
 #define DWORD_FILL(byte_size)										\
 	static_assert((byte_size)%sizeof(DWORD) == 0,					\
-					"Byte size is not DWORD multiple");			\
+					"Byte size is not DWORD multiple");				\
 	struct {														\
 		DWORD JOIN(FILL_GAP, JOIN(__LINE__,JOIN(_, byte_size)))		\
 		[(byte_size)/sizeof(DWORD)];								\

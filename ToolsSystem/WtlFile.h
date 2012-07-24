@@ -1,11 +1,6 @@
 #pragma once
 
 
-class CFileReport
-	: CAtlException
-{
-};
-
 class CWtlFile
 {
 public:
@@ -19,6 +14,7 @@ public:
 	bool Delete();
 
 	DWORD Read(LPVOID lpBuf, DWORD nCount);
+	bool ReadContent(CAtlArray<BYTE>& buff);
 	bool Write(LPCVOID lpBuf, DWORD nCount);
 	void WriteEndOfLine();
 	bool Flush();
@@ -85,4 +81,12 @@ public:
 
 public:
 	bool TempFile( CString& outpath );
+};
+
+
+class CTextFile
+	: public CWtlFile
+{
+public:
+	bool ReadUTF16LE(CStringW& refstr);
 };
