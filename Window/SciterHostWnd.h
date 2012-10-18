@@ -92,6 +92,11 @@ public:
 	HINSTANCE get_resource_instance() { return ModuleHelper::GetResourceInstance(); };
 	LRESULT on_callback_host(LPSCN_CALLBACK_HOST pnmld);// can be switched to virtual/override form
 
+#ifndef SCITER_LEGACY_SUPPORT
+	bool load_file(LPCWSTR uri);
+	LRESULT on_load_data(LPSCN_LOAD_DATA pnmld);
+#endif
+
 // Handler prototypes
 protected:
 	int OnCreate(LPCREATESTRUCT lpCreateStruct);

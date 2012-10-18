@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Manager.h"
+
 
 template<class TMixIn, class TRegister>
 class CEngineControllerT :
@@ -12,6 +14,10 @@ public:
 
 		m_managers = new TRegister;
 		ENSURE(m_managers);
+
+		/*CWorkError err;
+		err.log_msg = L"Couldn't allocate managers. Out of memory!";
+		err.bool_handler = m_managers;*/
 	}
 	~CEngineControllerT()
 	{
@@ -21,7 +27,6 @@ public:
 // Data members
 protected:
 	TRegister* m_managers;
-	//TMixIn*
 
 // Overrides
 private:
@@ -31,7 +36,8 @@ private:
 		{
 			if( pMsg->message==WMU_SIGNAL_SEND )
 			{
-				::SetEvent( (HANDLE) pMsg->wParam );
+				reinterpret_cast<CManagerSignaler*>(pMsg->wParam)->OnSignal();
+				::SetEvent( reinterpret_cast<HANDLE>(pMsg->lParam) );
 			}/* else if( pMsg->message==WMU_SIGNAL_POST ) {
 
 			}*/

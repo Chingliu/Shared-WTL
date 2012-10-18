@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "SciterHostWnd.h"
 
+#include <atldwm.h>
+
 
 CSciterHostWnd::CSciterHostWnd()
 {
@@ -9,7 +11,7 @@ CSciterHostWnd::CSciterHostWnd()
 
 LRESULT CSciterHostWnd::on_callback_host(LPSCN_CALLBACK_HOST pnmld)
 {
-//#ifdef DEBUG
+#ifdef DEBUG
 	switch( pnmld->channel )
 	{
 		case 0: // 0 - stdin, read from stdin requested, put string into pnmld->r
@@ -31,10 +33,25 @@ LRESULT CSciterHostWnd::on_callback_host(LPSCN_CALLBACK_HOST pnmld)
 		default: // view.callback(channel,p1,p2) call from script
 			break;
 	}
-//#endif
+#endif
 
 	return 0;
 }
+
+#ifndef SCITER_LEGACY_SUPPORT
+bool CSciterHostWnd::load_file(LPCWSTR uri)
+{
+	bool bOK = ::SciterLoadFile( m_hWnd, L"res_sciter\\" + CString(uri) )!=0;
+	ASSERT(bOK);
+
+	return bOK;
+}
+
+LRESULT CSciterHostWnd::on_load_data(LPSCN_LOAD_DATA pnmld)
+{
+	return LOAD_OK;// do default loading if data not set
+}
+#endif
 
 int CSciterHostWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {

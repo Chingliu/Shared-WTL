@@ -5,7 +5,7 @@
 #ifdef DEBUG
 	#define MIXFADE_TRACE
 	#define MIXFADE_CLIP
-#elif
+#else
 	#undef MIXFADE_TRACE
 	#undef MIXFADE_CLIP
 #endif

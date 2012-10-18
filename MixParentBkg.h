@@ -9,9 +9,7 @@ template<class T>
 class CMixParentBkg
 {
 public:
-	CMixParentBkg()
-	{
-	};
+	CMixParentBkg() {};
 
 // Data members
 protected:
@@ -23,7 +21,7 @@ public:
 	//		 but one that is higher in the parent hierarchy, so it will need an additional parameter: HWND hwndParent, or maybe an int
 	void SetupBackground(CWindow parent=NULL)
 	{
-		ATLASSERT(m_imgBack.IsNull());
+		ASSERT(m_imgBack.IsNull());
 
 		T* pT = static_cast<T*>(this);
 		CClientRect rc(pT->m_hWnd);
@@ -36,8 +34,8 @@ public:
 
 		// Create CImage
 		CImage imgPrint;
-		ATLENSURE( imgPrint.Create(rcParent.Width(), rcParent.Height(), 32, CImage::createAlphaChannel) );
-		ATLENSURE( m_imgBack.Create(rcBltSource.Width(), rcBltSource.Height(), 32, CImage::createAlphaChannel) );
+		ENSURE( imgPrint.Create(rcParent.Width(), rcParent.Height(), 32, CImage::createAlphaChannel) );
+		ENSURE( m_imgBack.Create(rcBltSource.Width(), rcBltSource.Height(), 32, CImage::createAlphaChannel) );
 
 		// Copy a portion of the parent DC as this window background
 		CDCHandle dc_print( imgPrint.GetDC() );

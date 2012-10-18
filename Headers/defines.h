@@ -12,6 +12,7 @@
 #undef BEGIN_MSG_MAP
 #define BEGIN_MSG_MAP BEGIN_MSG_MAP_EX
 #define WMU_DEBUG_MSG (WM_APP + 585)
+#define VERIFY(x) ATLVERIFY(x)
 
 
 #ifdef _DEBUG
@@ -26,6 +27,20 @@
 	#define WND_CLASS_SUFIX L"-APPCLASS_MIDI_RELEASE"
 #endif
 
+
+#undef ATLENSURE // ATL way throw an exception, what we really want is to terminate the application
+#define ATLENSURE(x) ENSURE(x)
+#ifdef DEBUG
+	#define ENSURE(x) ASSERT(x)
+#else
+	#ifdef _CRASHRPT_H_
+		#define ENSURE(x) do { if (!(x)) crEmulateCrash(CR_CPP_TERMINATE_CALL); } while (false)
+	#else
+		#define ENSURE(x) do { if (!(x)) terminate(); } while (false)
+	#endif
+#endif
+
+
 namespace WTL
 {
 	namespace RunTimeHelper
@@ -38,12 +53,3 @@ namespace WTL
 		}
 	}
 }
-
-
-#define DWORD_FILL(byte_size)										\
-	static_assert((byte_size)%sizeof(DWORD) == 0,					\
-					"Byte size is not DWORD multiple");				\
-	struct {														\
-		DWORD JOIN(FILL_GAP, JOIN(__LINE__,JOIN(_, byte_size)))		\
-		[(byte_size)/sizeof(DWORD)];								\
-	};

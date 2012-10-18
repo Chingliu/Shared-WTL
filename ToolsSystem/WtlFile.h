@@ -59,7 +59,7 @@ public:
 		typeBinary =       (int) 0x8000, // used in derived classes only
 		};
 
-	enum Attribute {
+	/*enum Attribute {
 		normal =    0x00,
 		readOnly =  0x01,
 		hidden =    0x02,
@@ -67,7 +67,7 @@ public:
 		volume =    0x08,
 		directory = 0x10,
 		archive =   0x20
-		};
+		};*/
 };
 
 

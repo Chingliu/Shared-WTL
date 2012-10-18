@@ -21,7 +21,7 @@ void CWorkError::ResetMessages()
 void CWorkError::ThrowError()
 {
 	ASSERT( CWorker::IsWorkingGuard() );// class should be only used in a 'guarded' thread stack
-	//ASSERT(false);
+	ASSERT(false);
 
 	throw CWorkException(this);
 }

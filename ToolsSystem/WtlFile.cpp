@@ -213,7 +213,7 @@ bool CTextFile::ReadUTF16LE(CStringW& refstr)	// Reads a UTF-16 enconded text-fi
 		return true;
 
 // Reads the 2-bytes header
-	static_assert( sizeof(wchar_t)==2, "WTF?" );
+	static_assert( sizeof(wchar_t)==2, "Not right" );
 	wchar_t header;
 	if( !Read(&header, 2) )// there should be at least 2 bytes
 		return false;
@@ -234,7 +234,7 @@ bool CTextFile::ReadUTF16LE(CStringW& refstr)	// Reads a UTF-16 enconded text-fi
 
 	//int chars = size/2;
 	refstr.ReleaseBufferSetLength( text_length );
-	return false;
+	return true;
 }
 
 /*
