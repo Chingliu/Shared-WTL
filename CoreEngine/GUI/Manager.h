@@ -2,9 +2,7 @@
 
 #include "Worker.h"
 #include "Adapter.h"
-
-#define WMU_SIGNAL_SEND (WM_APP + 0)
-#define WMU_SIGNAL_POST (WM_APP + 1)
+#include "EngineController.h"
 
 
 // Manager base - no adapter
@@ -106,14 +104,13 @@ protected:
 	void SendEngineSignal()
 	{
 		ASSERT( ::GetCurrentThreadId() != CWorker::g_dwMainThread );//only for threaded work else will cause a dead-lock!
-		CHandle event_lock( ::CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE | DELETE) );
-		_wndMain.PostMessage( WMU_SIGNAL_SEND, (WPARAM) this, (LPARAM) (HANDLE) event_lock );// here the pointer type is correct, so no static_cast<CManagerSignaler*>(this)
-		::WaitForSingleObject( event_lock, INFINITE );// not using SendMessage because it goes directly to the WinProc so can not be PreTranslated
+		CEngineSignalWnd::s_msgwnd.SendMessage( WMU_SIGNAL_SEND, (WPARAM) this );// here the pointer type is correct, so no static_cast<CManagerSignaler*>(this)
 	}
 
 	void PostEngineSignal()// NYI
 	{
-		_wndMain.PostMessage( WMU_SIGNAL_POST );// no PostThreadMessage because a modal loop might cause the messages to be lost, yet not sure if this way is 100% safe
+		ASSERT( false );
+		CEngineSignalWnd::s_msgwnd.PostMessage( WMU_SIGNAL_POST );// yes, its survives system inner-loops
 	}
 
 public:

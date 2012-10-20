@@ -27,7 +27,7 @@ protected:
 
 // Function members
 private:
-	void Run();
+	void ThreadRun();
 	void WorkGuard();
 
 // Interface - work process

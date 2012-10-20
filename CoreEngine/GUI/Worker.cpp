@@ -20,11 +20,11 @@ __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
 		pop		ecx
 		push	eax
 		xor		eax, eax
-		jmp CWorker::Run
+		jmp CWorker::ThreadRun
 	}
 }
 
-void CWorker::Run()
+void CWorker::ThreadRun()
 {
 #ifdef _CRASHRPT_H_
 	CrThreadAutoInstallHelper crashrpt;
