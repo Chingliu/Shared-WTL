@@ -54,7 +54,7 @@ public:
 	void SendSignal(tdSignalFunc func)
 	{
 		m_signal_callback = func;
-		if( IsWorkThreaded() )
+		if( ::GetCurrentThreadId() != CWorker::g_dwMainThread )
 			SendEngineSignal();
 		else
 			ASSERT(false);// consider calling the function directly, so no SendSignal() right!
@@ -88,7 +88,7 @@ public:
 	void SendSignal(tdSignalFunc func)
 	{
 		m_signal_callback = func;
-		if( IsWorkThreaded() )
+		if( ::GetCurrentThreadId() != CWorker::g_dwMainThread )
 			SendEngineSignal();
 		else
 			OnSignal();

@@ -39,7 +39,7 @@ void CWorker::ThreadRun()
 
 	ASSERT(g_threadCtx.bRunThread==true);
 	g_threadCtx.bRunThread = false;
-	m_thread_race = false;
+	m_thread_race = false;// releases SpinThreadEnd
 }
 
 LONG CALLBACK WorkVectoredHandler(PEXCEPTION_POINTERS ExceptionInfo)// The handler should not call functions that acquire synchronization objects or allocate memory
@@ -96,9 +96,8 @@ void CWorker::DirectWork( util::Callback<void()> runcbk )
 
 void CWorker::ThreadWork( util::Callback<void()> runcbk )
 {
-	ENSURE(m_thread_race==false);// system not designed to this kind of heavy-work!  ->  data-race problems
+	ENSURE(m_thread_race==false);// same Worker spawning another Worker-thread; system not designed to this kind of heavy-work!  ->  data-race problems
 	m_thread_race = true;		 // you better think a GUI sync alternative
-	ASSERT(::GetCurrentThreadId() == CWorker::g_dwMainThread);// might not be the case; but it seems really dangerous  ->  data-race problems
 	ASSERT(runcbk);
 
 	m_single_cbk = runcbk;
@@ -114,4 +113,14 @@ void CWorker::MinWait( DWORD ms )
 	DWORD dif = ::GetTickCount()-m_ticktime;
 	if( ms>dif )
 		::Sleep( ms-dif );
+}
+
+void CWorker::SpinThreadEnd()
+{
+	while( m_thread_race );
+}
+
+bool CWorker::IsThreading()
+{
+	return m_thread_race;
 }

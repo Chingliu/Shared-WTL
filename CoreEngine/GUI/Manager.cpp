@@ -13,7 +13,7 @@ void CManager::ASSERT_WorkGuarded()
 void CManager::ASSERT_WorkThreaded()
 {
 	ASSERT( CWorker::IsWorkingGuard() );
-	ASSERT( CWorker::IsWorkThreaded() );
+	ASSERT( CWorker::IsWorkingThread() );
 }
 
 

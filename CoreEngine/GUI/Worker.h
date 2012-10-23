@@ -30,7 +30,7 @@ public:
 
 	// context of the current thread:
 	static bool IsWorkingGuard()	{ return g_threadCtx.bRunGuard; }
-	static bool IsWorkThreaded()	{ return g_threadCtx.bRunThread; }
+	static bool IsWorkingThread()	{ return g_threadCtx.bRunThread; }
 
 // Data members
 private:
@@ -50,7 +50,10 @@ public:
 
 	void DirectWork( util::Callback<void()> runcbk );
 	void ThreadWork( util::Callback<void()> runcbk );
+
 	void MinWait( DWORD ms ); //call it at end of the callback
+	void SpinThreadEnd();
+	bool IsThreading();
 
 // Interface - overridable
 protected:

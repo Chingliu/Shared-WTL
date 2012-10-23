@@ -12,7 +12,7 @@ public:
 
 // Maps
 public:
-	BEGIN_MSG_MAP(CMsgWindow)
+	BEGIN_MSG_MAP(CEngineSignalWnd)
 		MESSAGE_HANDLER_EX(WMU_SIGNAL_SEND, OnSignalSend)
 		MESSAGE_HANDLER_EX(WMU_SIGNAL_POST, OnSignalPost)
 	END_MSG_MAP()

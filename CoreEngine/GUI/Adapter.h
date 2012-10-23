@@ -12,6 +12,7 @@ public:
 	template<typename TMgrPtr> /*CManagerLinked derived type*/
 	CAdapterLinked(TMgrPtr* mgr)
 	{
+		ASSERT(mgr);
 		mgr->SetAdapter( static_cast<TMgrPtr::tdAdapter*>(this) );
 	};
 };
@@ -22,6 +23,7 @@ public:
 	template<typename TMgrPtr> /*CManagerLinkedN derived type*/
 	CAdapterLinkedN(TMgrPtr* mgr)
 	{
+		ASSERT(mgr);
 		mgr->AddAdapter( static_cast<TMgrPtr::tdAdapter*>(this) );
 	};
 };
