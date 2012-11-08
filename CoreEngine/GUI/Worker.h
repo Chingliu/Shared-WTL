@@ -35,8 +35,8 @@ public:
 // Data members
 private:
 	DWORD m_ticktime;
+	volatile bool m_thread_race;
 	util::Callback<void()> m_single_cbk;
-	bool m_thread_race;
 
 // Function members
 private:

@@ -236,7 +236,7 @@ namespace Log
 	Log::Checkpoint RAND_IDENTIFIER(var)(RAND_IDENTIFIER(var##_Record));
 */
 
-// Work context logging - has an associated Printer (local 'logger' variable)
+// Worker context logging (not required to be guarded/working) - has an associated Printer (local 'logger' variable)
 #define WORK_PUTLOG(expr) \
 	do { \
 		BUILD_FMT_RECORD(RAND_IDENTIFIER(recAutoToLog), expr) \

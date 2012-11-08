@@ -4,6 +4,14 @@
 #include "Draw.h"
 
 
+COLORREF RGBHEX (DWORD hex)
+{
+	BYTE r = (hex & 0xFF0000) >> 16;
+	BYTE g = (hex & 0xFF00) >> 8;
+	BYTE b = hex & 0xFF;
+	return RGB(r, g, b);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 HLSCOLOR RGB2HLS (COLORREF rgb)
 {
