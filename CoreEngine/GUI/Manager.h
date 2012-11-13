@@ -22,7 +22,7 @@ protected:
 
 // Overrides
 protected:
-	virtual void OnErrorReport( const CWorkErrorData& source_err, Log::LogList& chks_list ) override;
+	virtual void OnErrorReport( const Err::sErrorData& source_err, Log::LogList& chks_list ) override;
 };
 
 

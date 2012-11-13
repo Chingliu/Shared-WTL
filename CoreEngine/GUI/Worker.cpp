@@ -26,8 +26,10 @@ __declspec(naked) DWORD WINAPI _ThreadProcThunk(void*)
 
 void CWorker::ThreadRun()
 {
+#ifndef DEBUG
 #ifdef _CRASHRPT_H_
 	CrThreadAutoInstallHelper crashrpt;
+#endif
 #endif
 
 	ASSERT(g_threadCtx.bRunThread==false);
@@ -70,14 +72,11 @@ void CWorker::WorkGuard()
 	try
 	{
 		m_single_cbk();
-	} catch( CWorkError::CWorkException& e ) {
-		OnErrorReport( e, chks_list );
+	} catch( Err::CException& e ) {
+		OnErrorReport( e.err_data, chks_list );
+	} catch(...) {
+		ENSURE(false);
 	}
-#ifdef DEBUG
-	catch(...) {
-		ASSERT(false);
-	}
-#endif
 
 	::RemoveVectoredExceptionHandler( hVectorHandle );
 

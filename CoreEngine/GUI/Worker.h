@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Log.h"
-#include "WorkError.h"
+#include "Error.h"
 
 
 /*
@@ -45,7 +45,7 @@ private:
 
 // Interface - work process
 public:
-	CWorkError err;
+	Err::CWorkerOpError err;
 	Log::Printer logger;
 
 	void DirectWork( util::Callback<void()> runcbk );
@@ -57,5 +57,5 @@ public:
 
 // Interface - overridable
 protected:
-	virtual void OnErrorReport( const CWorkErrorData& source_err, Log::LogList& chks_list ) {}
+	virtual void OnErrorReport( const Err::sErrorData& source_err, Log::LogList& chks_list ) {}
 };
