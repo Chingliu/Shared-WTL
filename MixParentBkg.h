@@ -8,12 +8,9 @@
 template<class T>
 class CMixParentBkg
 {
-public:
-	CMixParentBkg() {};
-
 // Data members
 protected:
-	CImage m_imgBack; // Bitmap background
+	CImage m_imgBack;
 
 // Interface
 public:
@@ -45,6 +42,12 @@ public:
 		imgPrint.ReleaseDC();
 		imgPrint.BitBlt(dc_back, rc, rcBltSource.TopLeft() );
 		m_imgBack.ReleaseDC();
+	};
+
+	void ResetBackground()
+	{
+		m_imgBack.Destroy();
+		static_cast<T*>(this)->Invalidate(FALSE);
 	};
 
 	void DrawBackground(HDC dc)

@@ -49,11 +49,13 @@ namespace Err
 
 	void CWorkerOpError::ThrowError()
 	{
+		ASSERT(false);
 		throw CExceptionWorker( *this );
 	}
 
 	void CEngineOpError::ThrowError()
 	{
+		ASSERT(false);
 		throw CExceptionScoped( *this );
 	}
 

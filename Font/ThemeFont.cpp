@@ -17,7 +17,7 @@ CThemeFont::CThemeFont()
 
 void CThemeFont::CreateThemeFont( CTheme* themebase, UINT nType, PCTSTR face )
 {
-	ATLASSERT(themebase);
+	ASSERT(themebase);
 	m_themebase = themebase;
 
 	// Determine what font to use for the text.
@@ -36,17 +36,17 @@ int CThemeFont::MeasureText( CString text, CWindow source )
 	CRect rcMeasure;
 	CWindowDC dc( source );
 	dc.SelectFont( *this );
-
-	if( DwmIsCompositionEnabled() )
+	
+	if( 1 )//if( DwmIsCompositionEnabled() ) - GetThemeTextExtent retorna o tamanho do texto incluindo o padding do glow, acaba sendo um valor bem diferente retorna pelo else
 	{
-		ATLASSERT(m_themebase);
+		ASSERT(m_themebase);
 		// GetTextExtentPoint32() ?
 		m_themebase->GetThemeTextExtent(dc, 0, 0, text, -1,
 										uFormat, NULL, &rcMeasure );
 	} else {
 		dc.DrawText( text, -1, &rcMeasure, uFormat | DT_CALCRECT );
 	}
-	ATLASSERT(rcMeasure.left==0);
+	ASSERT(rcMeasure.left==0);
 	return rcMeasure.right;// rcMeasure.Width();
 }
 
@@ -79,7 +79,7 @@ void CThemeFont::DrawText( CDCHandle dc, CRect& rcText, CString text )
 		dcMem.SelectFont( *this );
 		HRESULT hr = m_themebase->DrawThemeTextEx( dcMem, 0, 0, text, -1,
 						  uFormat, rcText2, &dto );
-		ATLVERIFY(hr==S_OK);
+		ENSURE(hr==S_OK);
 
 		// Blit the text to the screen
 		BLENDFUNCTION bf = { 0 };

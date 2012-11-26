@@ -36,11 +36,11 @@ void CWindowFont::CreateStyled( UINT nType, PCTSTR face )
 
 void CWindowFont::Create( CWindow wnd, UINT nType, PCTSTR face )
 {
-	ATLASSERT(wnd);
-	ATLASSERT(wnd.IsWindow());
+	ASSERT(wnd);
+	ASSERT(wnd.IsWindow());
 
 	HFONT hFont = wnd.GetFont();
-	ATLASSERT(hFont);
+	ASSERT(hFont);
 
 	// Create the new font
 	m_lf = hFont;

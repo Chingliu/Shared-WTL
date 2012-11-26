@@ -15,7 +15,7 @@
 #define VERIFY(x) ATLVERIFY(x)
 
 
-#ifdef _DEBUG
+#ifdef DEBUG
 	#define ASSERT(x) do { if (!(x)) __debugbreak(); } while (false)
 	#define DEBUG_ONLY(f) (f)
 	#define RELEASE_ONLY(f) __noop
@@ -33,6 +33,7 @@
 #ifdef DEBUG
 	#define ENSURE(x) ASSERT(x)
 #else
+	//#define ENSURE(x) do { if (!(x)) __asm { int 3 }; } while (false)
 	#ifdef _CRASHRPT_H_
 		#define ENSURE(x) do { if (!(x)) crEmulateCrash(CR_CPP_TERMINATE_CALL); } while (false)
 	#else

@@ -19,11 +19,17 @@ void CWorkError::ThrowError()
 void CWorkError::WinHandler( bool res )
 {
 	if( !res )
+	{
+		ASSERT(false);
 		throw CWorkException();
+	}
 }
 
 void CWorkError::NormHandler( bool res )
 {
 	if( !res )
+	{
+		ASSERT(false);
 		throw CWorkException();
+	}
 }
